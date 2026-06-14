@@ -1,0 +1,1501 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=5" />
+<title>Bansal's Makeover — Luxury Beauty Studio · Tandalja, Vadodara</title>
+<meta name="description" content="Premium hair studio and makeover destination in Tandalja, Vadodara — haircut, balayage, keratin, bridal makeup, skincare. Book online." />
+<link rel="icon" href="data:image/svg+xml,%3Csvg%20xmlns='http://www.w3.org/2000/svg'%20viewBox='0%200%2032%2032'%3E%3Crect%20width='32'%20height='32'%20rx='6'%20fill='%2315110f'/%3E%3Ctext%20x='16'%20y='22'%20font-family='Georgia,serif'%20font-size='18'%20fill='%23e0c188'%20text-anchor='middle'%3EB%3C/text%3E%3C/svg%3E" />
+<script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
+<script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+<style>html,body{margin:0;background:#15110f}#root{min-height:100vh}</style>
+</head>
+<body>
+<div id="root"></div>
+<script type="text/babel" data-presets="react">
+const { useState, useEffect, useRef } = React;
+
+/* ===== Supabase (this project's keys are public anon keys — safe in client) ===== */
+const SUPABASE_URL = "https://uvicpfujiltpuztkloiq.supabase.co";
+const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InV2aWNwZnVqaWx0cHV6dGtsb2lxIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODEzNjk1ODAsImV4cCI6MjA5Njk0NTU4MH0.p96Q6Jka8dAjjKFUdaoLi96yzobG6Ulznk4fW_KXMYE";
+const db = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+/* ===== inline icons (replaces lucide-react) ===== */
+const ICONS = {
+  "scissors": '<circle cx="6" cy="6" r="3"/><path d="M8.12 8.12 12 12"/><path d="M20 4 8.12 15.88"/><circle cx="6" cy="18" r="3"/><path d="M14.8 14.8 20 20"/>',
+  "sparkles": '<path d="M9.937 15.5A2 2 0 0 0 8.5 14.063l-6.135-1.582a.5.5 0 0 1 0-.962L8.5 9.936A2 2 0 0 0 9.937 8.5l1.582-6.135a.5.5 0 0 1 .963 0L14.063 8.5A2 2 0 0 0 15.5 9.937l6.135 1.581a.5.5 0 0 1 0 .964L15.5 14.063a2 2 0 0 0-1.437 1.437l-1.582 6.135a.5.5 0 0 1-.963 0z"/><path d="M20 3v4"/><path d="M22 5h-4"/><path d="M4 17v2"/><path d="M5 18H3"/>',
+  "clock": '<circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/>',
+  "phone": '<path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"/>',
+  "message-circle": '<path d="M7.9 20A9 9 0 1 0 4 16.1L2 22Z"/>',
+  "map-pin": '<path d="M20 10c0 4.993-5.539 10.193-7.399 11.799a1 1 0 0 1-1.202 0C9.539 20.193 4 14.993 4 10a8 8 0 0 1 16 0"/><circle cx="12" cy="10" r="3"/>',
+  "arrow-right": '<path d="M5 12h14"/><path d="m12 5 7 7-7 7"/>',
+  "arrow-up-right": '<path d="M7 7h10v10"/><path d="M7 17 17 7"/>',
+  "check": '<path d="M20 6 9 17l-5-5"/>',
+  "x": '<path d="M18 6 6 18"/><path d="m6 6 12 12"/>',
+  "lock": '<rect width="18" height="11" x="3" y="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/>',
+  "eye": '<path d="M2.062 12.348a1 1 0 0 1 0-.696 10.75 10.75 0 0 1 19.876 0 1 1 0 0 1 0 .696 10.75 10.75 0 0 1-19.876 0"/><circle cx="12" cy="12" r="3"/>',
+  "eye-off": '<path d="M10.733 5.076a10.744 10.744 0 0 1 11.205 6.575 1 1 0 0 1 0 .696 10.747 10.747 0 0 1-1.444 2.49"/><path d="M14.084 14.158a3 3 0 0 1-4.242-4.242"/><path d="M17.479 17.499a10.75 10.75 0 0 1-15.417-5.151 1 1 0 0 1 0-.696 10.75 10.75 0 0 1 4.446-5.143"/><path d="m2 2 20 20"/>',
+  "menu": '<line x1="4" x2="20" y1="12" y2="12"/><line x1="4" x2="20" y1="6" y2="6"/><line x1="4" x2="20" y1="18" y2="18"/>',
+  "layout-dashboard": '<rect width="7" height="9" x="3" y="3" rx="1"/><rect width="7" height="5" x="14" y="3" rx="1"/><rect width="7" height="9" x="14" y="12" rx="1"/><rect width="7" height="5" x="3" y="16" rx="1"/>',
+  "calendar-check": '<path d="M8 2v4"/><path d="M16 2v4"/><rect width="18" height="18" x="3" y="4" rx="2"/><path d="M3 10h18"/><path d="m9 16 2 2 4-4"/>',
+  "tag": '<path d="M12.586 2.586A2 2 0 0 0 11.172 2H4a2 2 0 0 0-2 2v7.172a2 2 0 0 0 .586 1.414l8.704 8.704a2.426 2.426 0 0 0 3.42 0l6.58-6.58a2.426 2.426 0 0 0 0-3.42z"/><circle cx="7.5" cy="7.5" r=".5" fill="currentColor"/>',
+  "notebook-pen": '<path d="M13.4 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-7.4"/><path d="M2 6h4"/><path d="M2 10h4"/><path d="M2 14h4"/><path d="M2 18h4"/><path d="M21.378 5.626a1 1 0 1 0-3.004-3.004l-5.01 5.012a2 2 0 0 0-.506.854l-.837 2.87a.5.5 0 0 0 .62.62l2.87-.837a2 2 0 0 0 .854-.506z"/>',
+  "users": '<path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/>',
+  "settings": '<path d="M12.22 2h-.44a2 2 0 0 0-2 2v.18a2 2 0 0 1-1 1.73l-.43.25a2 2 0 0 1-2 0l-.15-.08a2 2 0 0 0-2.73.73l-.22.38a2 2 0 0 0 .73 2.73l.15.1a2 2 0 0 1 1 1.72v.51a2 2 0 0 1-1 1.74l-.15.09a2 2 0 0 0-.73 2.73l.22.38a2 2 0 0 0 2.73.73l.15-.08a2 2 0 0 1 2 0l.43.25a2 2 0 0 1 1 1.73V20a2 2 0 0 0 2 2h.44a2 2 0 0 0 2-2v-.18a2 2 0 0 1 1-1.73l.43-.25a2 2 0 0 1 2 0l.15.08a2 2 0 0 0 2.73-.73l.22-.39a2 2 0 0 0-.73-2.73l-.15-.08a2 2 0 0 1-1-1.74v-.5a2 2 0 0 1 1-1.74l.15-.09a2 2 0 0 0 .73-2.73l-.22-.38a2 2 0 0 0-2.73-.73l-.15.08a2 2 0 0 1-2 0l-.43-.25a2 2 0 0 1-1-1.73V4a2 2 0 0 0-2-2z"/><circle cx="12" cy="12" r="3"/>',
+  "star": '<polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/>',
+  "plus": '<path d="M5 12h14"/><path d="M12 5v14"/>',
+  "trash-2": '<path d="M3 6h18"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/><line x1="10" x2="10" y1="11" y2="17"/><line x1="14" x2="14" y1="11" y2="17"/>',
+  "image-plus": '<path d="M16 5h6"/><path d="M19 2v6"/><path d="M21 11.5V19a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h7.5"/><path d="m21 15-3.086-3.086a2 2 0 0 0-2.828 0L6 21"/><circle cx="9" cy="9" r="2"/>',
+  "images": '<path d="M18 22H4a2 2 0 0 1-2-2V6"/><path d="m22 13-1.296-1.296a2.41 2.41 0 0 0-3.408 0L11 18"/><circle cx="12" cy="8" r="2"/><rect width="16" height="16" x="6" y="2" rx="2"/>',
+  "log-out": '<path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" x2="9" y1="12" y2="12"/>',
+  "external-link": '<path d="M15 3h6v6"/><path d="M10 14 21 3"/><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/>',
+  "maximize-2": '<polyline points="15 3 21 3 21 9"/><polyline points="9 21 3 21 3 15"/><line x1="21" x2="14" y1="3" y2="10"/><line x1="3" x2="10" y1="21" y2="14"/>',
+  "chevron-up": '<path d="m18 15-6-6-6 6"/>',
+  "chevron-down": '<path d="m6 9 6 6 6-6"/>',
+  "wand-2": '<path d="m21.64 3.64-1.28-1.28a1.21 1.21 0 0 0-1.72 0L2.36 18.64a1.21 1.21 0 0 0 0 1.72l1.28 1.28a1.2 1.2 0 0 0 1.72 0L21.64 5.36a1.2 1.2 0 0 0 0-1.72"/><path d="m14 7 3 3"/><path d="M5 6v4"/><path d="M19 14v4"/><path d="M10 2v2"/><path d="M7 8H3"/><path d="M21 16h-4"/><path d="M11 3H9"/>',
+  "calendar": '<path d="M8 2v4"/><path d="M16 2v4"/><rect width="18" height="18" x="3" y="4" rx="2"/><path d="M3 10h18"/>',
+};
+function Ic({ n, size = 18, fill, color, style, className }) {
+  return React.createElement("svg", {
+    xmlns: "http://www.w3.org/2000/svg", width: size, height: size, viewBox: "0 0 24 24",
+    fill: fill || "none", stroke: "currentColor", strokeWidth: 2, strokeLinecap: "round", strokeLinejoin: "round",
+    className, style: color ? { color, ...(style || {}) } : style,
+    dangerouslySetInnerHTML: { __html: ICONS[n] || "" },
+  });
+}
+const Scissors = (p) => Ic({ ...p, n: "scissors" });
+const Sparkles = (p) => Ic({ ...p, n: "sparkles" });
+const Calendar = (p) => Ic({ ...p, n: "calendar" });
+const Clock = (p) => Ic({ ...p, n: "clock" });
+const Phone = (p) => Ic({ ...p, n: "phone" });
+const MessageCircle = (p) => Ic({ ...p, n: "message-circle" });
+const MapPin = (p) => Ic({ ...p, n: "map-pin" });
+const ArrowRight = (p) => Ic({ ...p, n: "arrow-right" });
+const ArrowUpRight = (p) => Ic({ ...p, n: "arrow-up-right" });
+const Check = (p) => Ic({ ...p, n: "check" });
+const X = (p) => Ic({ ...p, n: "x" });
+const Lock = (p) => Ic({ ...p, n: "lock" });
+const Eye = (p) => Ic({ ...p, n: "eye" });
+const EyeOff = (p) => Ic({ ...p, n: "eye-off" });
+const Menu = (p) => Ic({ ...p, n: "menu" });
+const LayoutDashboard = (p) => Ic({ ...p, n: "layout-dashboard" });
+const CalendarCheck = (p) => Ic({ ...p, n: "calendar-check" });
+const Tag = (p) => Ic({ ...p, n: "tag" });
+const NotebookPen = (p) => Ic({ ...p, n: "notebook-pen" });
+const Users = (p) => Ic({ ...p, n: "users" });
+const Cog = (p) => Ic({ ...p, n: "settings" });
+const Star = (p) => Ic({ ...p, n: "star" });
+const Plus = (p) => Ic({ ...p, n: "plus" });
+const Trash2 = (p) => Ic({ ...p, n: "trash-2" });
+const ImagePlus = (p) => Ic({ ...p, n: "image-plus" });
+const Images = (p) => Ic({ ...p, n: "images" });
+const LogOut = (p) => Ic({ ...p, n: "log-out" });
+const ExternalLink = (p) => Ic({ ...p, n: "external-link" });
+const Maximize2 = (p) => Ic({ ...p, n: "maximize-2" });
+const ChevronUp = (p) => Ic({ ...p, n: "chevron-up" });
+const ChevronDown = (p) => Ic({ ...p, n: "chevron-down" });
+const UserRound = (p) => Ic({ ...p, n: "users" });
+const Package = (p) => Ic({ ...p, n: "tag" });
+const Wand2 = (p) => Ic({ ...p, n: "wand-2" });
+
+/* ===== mini area chart (replaces recharts) ===== */
+function MiniChart({ data }) {
+  const w = 640, h = 200, pad = 26, n = data.length;
+  const max = Math.max(1, ...data.map((d) => d.count));
+  const X = (i) => pad + (i * (w - pad * 2)) / (n - 1);
+  const Y = (v) => h - pad - (v / max) * (h - pad * 2);
+  const line = data.map((d, i) => (i ? "L" : "M") + X(i).toFixed(1) + " " + Y(d.count).toFixed(1)).join(" ");
+  const area = line + " L" + X(n - 1).toFixed(1) + " " + (h - pad) + " L" + X(0).toFixed(1) + " " + (h - pad) + " Z";
+  return (
+    <svg viewBox={"0 0 " + w + " " + h} width="100%" height="100%" preserveAspectRatio="none">
+      <defs><linearGradient id="bmg" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stopColor="#e0c188" stopOpacity="0.45" /><stop offset="100%" stopColor="#e0c188" stopOpacity="0" /></linearGradient></defs>
+      <path d={area} fill="url(#bmg)" />
+      <path d={line} fill="none" stroke="#e0c188" strokeWidth="2" />
+      {data.map((d, i) => <circle key={i} cx={X(i)} cy={Y(d.count)} r="3" fill="#e0c188" />)}
+      {data.map((d, i) => <text key={"t" + i} x={X(i)} y={h - 6} fill="#cdbfa8" fontSize="11" textAnchor="middle" fontFamily="Jost">{d.day}</text>)}
+    </svg>
+  );
+}
+
+/* ===== Supabase data layer ===== */
+function mergeDefaults(stored) {
+  const dd = defaultData(); stored = stored || {};
+  return {
+    ...dd, ...stored,
+    settings: { ...dd.settings, ...(stored.settings || {}) },
+    content: { ...dd.content, ...(stored.content || {}) },
+    media: { ...dd.media, ...(stored.media || {}) },
+    appointments: [],
+  };
+}
+async function loadContent() {
+  try {
+    const { data, error } = await db.from("site_content").select("data").eq("id", 1).single();
+    if (error) return mergeDefaults(null);
+    return mergeDefaults(data ? data.data : null);
+  } catch { return mergeDefaults(null); }
+}
+async function saveContent(d) {
+  const { appointments, ...rest } = d;
+  try { await db.from("site_content").update({ data: rest }).eq("id", 1); } catch (e) { console.error(e); }
+}
+async function fetchAppointments() {
+  try {
+    const { data } = await db.from("appointments").select("*").order("created_at", { ascending: false });
+    return (data || []).map((a) => ({ ...a, createdAt: a.created_at ? new Date(a.created_at).getTime() : Date.now() }));
+  } catch { return []; }
+}
+function compressToBlob(file, max = 1280, q = 0.74) {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onload = () => {
+      const img = new Image();
+      img.onload = () => {
+        let w = img.width, h = img.height;
+        if (w > h && w > max) { h = Math.round(h * max / w); w = max; }
+        else if (h >= w && h > max) { w = Math.round(w * max / h); h = max; }
+        const c = document.createElement("canvas"); c.width = w; c.height = h;
+        c.getContext("2d").drawImage(img, 0, 0, w, h);
+        c.toBlob((b) => b ? resolve(b) : reject(new Error("compress")), "image/jpeg", q);
+      };
+      img.onerror = reject; img.src = reader.result;
+    };
+    reader.onerror = reject; reader.readAsDataURL(file);
+  });
+}
+async function uploadImage(file) {
+  const blob = await compressToBlob(file);
+  const path = "img/" + Date.now() + "_" + Math.random().toString(36).slice(2) + ".jpg";
+  const { error } = await db.storage.from("media").upload(path, blob, { contentType: "image/jpeg", upsert: false });
+  if (error) throw error;
+  return db.storage.from("media").getPublicUrl(path).data.publicUrl;
+}
+
+const GF_LOGO = "data:image/png;base64,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";
+const GF_URL = "https://www.glowframe.co.in/";
+
+/* data layer is Supabase — see preamble */
+const PHONE = "8849578803";
+const MAPS = "https://maps.app.goo.gl/rCXB3QNrpmC4sec1A";
+
+function today(offset = 0) {
+  const d = new Date(); d.setDate(d.getDate() + offset);
+  return d.toISOString().slice(0, 10);
+}
+const inr = (n) => "₹" + Number(n || 0).toLocaleString("en-IN");
+const STATUSES = ["Confirmed", "In Progress", "Completed", "Rescheduled"];
+const move = (arr, i, dir) => {
+  const j = i + dir; if (j < 0 || j >= arr.length) return arr;
+  const c = [...arr]; const t = c[i]; c[i] = c[j]; c[j] = t; return c;
+};
+
+const defaultData = () => ({
+  settings: {
+    businessName: "Bansal's Makeover",
+    tagline: "Luxury Beauty, Redefined",
+    phone: PHONE, whatsapp: PHONE,
+    address: "Aries Prime, Ashwamegh Nagar, Tandalja, Vadodara, Gujarat",
+    hoursWeek: "Tue – Sun · 10:00 AM – 8:30 PM",
+    hoursOff: "Monday · Closed",
+    mapsLink: MAPS,
+    creditsEnabled: true,
+  },
+  content: {
+    heroLine1: "Luxury Beauty,",
+    heroLine2: "Redefined.",
+    heroLead: "A premium hair studio and makeover destination — built on honest consultation, uncompromising hygiene and results worthy of an editorial.",
+    aboutHead: "Not a salon. A",
+    aboutAccent: "beauty destination.",
+    aboutBody: "Every visit begins with a real conversation about your hair, your skin and what you actually want — never an upsell. The space is calm, the tools are sterilised in front of you, and the products are premium-grade.",
+  },
+  media: {
+    hero: "", about: "",
+    transformations: [
+      { id: 1, client: "Aanya", service: "Balayage", date: today(-12), desc: "Soft, hand-painted dimension from a flat base colour.", featured: true, before: "", after: "" },
+      { id: 2, client: "Riya", service: "Keratin", date: today(-26), desc: "Frizz tamed into glass-like, manageable shine.", featured: false, before: "", after: "" },
+      { id: 3, client: "Diya", service: "Bridal Makeup", date: today(-40), desc: "An editorial bridal look built around her features.", featured: false, before: "", after: "" },
+    ],
+    gallery: [],
+    team: [],
+    products: [],
+  },
+  services: [
+    { id: 1, name: "Haircut & Styling", cat: "Hair", price: 800, desc: "Precision cuts and finishing tuned to your face, hair and intent.", img: "" },
+    { id: 2, name: "Hair Colour", cat: "Colour", price: 2500, desc: "Global and creative colour using premium, ammonia-low systems.", img: "" },
+    { id: 3, name: "Balayage", cat: "Colour", price: 4500, desc: "Hand-painted dimension that grows out soft, never stark.", img: "" },
+    { id: 4, name: "Hair Treatments", cat: "Care", price: 1800, desc: "Restorative rituals for shine, strength and scalp health.", img: "" },
+    { id: 5, name: "Smoothening", cat: "Care", price: 4000, desc: "Frizz-free, weightless smoothness that lasts.", img: "" },
+    { id: 6, name: "Keratin", cat: "Care", price: 5000, desc: "Deep keratin therapy for glass-like, manageable hair.", img: "" },
+    { id: 7, name: "Bridal Makeup", cat: "Makeup", price: 12000, desc: "An unhurried, editorial bridal look built around you.", img: "" },
+    { id: 8, name: "Party Makeup", cat: "Makeup", price: 3500, desc: "Camera-ready glamour for every occasion.", img: "" },
+    { id: 9, name: "Skincare & Facials", cat: "Skin", price: 2000, desc: "Clinical-grade facials for a calm, luminous complexion.", img: "" },
+    { id: 10, name: "Grooming", cat: "Grooming", price: 1500, desc: "Refined grooming and detailing, done meticulously.", img: "" },
+  ],
+  appointments: [],
+  logs: [],
+  reviews: [
+    { id: 1, name: "Sneha P.", rating: 5, service: "Balayage", text: "The most premium salon experience I've had in Vadodara. Hygiene, attention, the result — flawless.", img: "" },
+    { id: 2, name: "Kavya R.", rating: 5, service: "Bridal Makeup", text: "They treated my bridal trial like an editorial shoot. I felt completely taken care of.", img: "" },
+    { id: 3, name: "Megha T.", rating: 5, service: "Keratin", text: "Honest consultation, no upselling, and hair that finally behaves. Worth every rupee.", img: "" },
+  ],
+});
+
+/* image upload handled by uploadImage() in preamble */
+/* ------------------------------- styles -------------------------------- */
+const CSS = `
+@import url('https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;0,600;1,400&family=Jost:wght@300;400;500;600&display=swap');
+* { box-sizing:border-box; margin:0; padding:0; }
+.bm {
+  --ink:#15110f; --ink2:#1d1815; --ink3:#26201c;
+  --ivory:#f3ede2; --soft:#cdbfa8; --beige:#b8a684;
+  --gold:#e0c188; --gold2:#caa564; --line:rgba(224,193,136,.18); --off:#fbf8f2;
+  font-family:'Jost',sans-serif; color:var(--ivory); background:var(--ink);
+  -webkit-font-smoothing:antialiased; line-height:1.6; overflow-x:hidden;
+}
+.bm h1,.bm h2,.bm h3,.bm .serif { font-family:'Cormorant Garamond',serif; font-weight:400; letter-spacing:.01em; }
+.bm a { color:inherit; text-decoration:none; }
+.bm ::selection { background:var(--gold); color:var(--ink); }
+.eyebrow { font-size:11px; letter-spacing:.42em; text-transform:uppercase; color:var(--gold); font-weight:500; }
+.muted { color:var(--soft); }
+.wrap { max-width:1200px; margin:0 auto; padding:0 28px; }
+.gline { height:1px; background:linear-gradient(90deg,transparent,var(--line),transparent); }
+.reveal { opacity:0; transform:translateY(26px); transition:opacity .9s cubic-bezier(.2,.7,.2,1), transform .9s cubic-bezier(.2,.7,.2,1); }
+.reveal.in { opacity:1; transform:none; }
+@media (prefers-reduced-motion: reduce){ .reveal{opacity:1;transform:none;transition:none;} .c1,.c2,.c3,.marq{animation:none!important;} }
+.btn { display:inline-flex; align-items:center; gap:9px; font-family:'Jost'; font-size:13px; letter-spacing:.14em; text-transform:uppercase;
+  padding:15px 28px; border-radius:2px; cursor:pointer; border:1px solid var(--gold); transition:.4s; }
+.btn-gold { background:linear-gradient(135deg,var(--gold),var(--gold2)); color:var(--ink); font-weight:500; }
+.btn-gold:hover { box-shadow:0 14px 40px -10px rgba(224,193,136,.55); transform:translateY(-2px); }
+.btn-ghost { background:transparent; color:var(--ivory); border-color:var(--line); }
+.btn-ghost:hover { border-color:var(--gold); color:var(--gold); }
+.nav { position:fixed; top:0; left:0; right:0; z-index:50; transition:.5s; border-bottom:1px solid transparent; }
+.nav.scrolled { background:rgba(21,17,15,.72); backdrop-filter:blur(18px); border-bottom:1px solid var(--line); }
+.nav .row { display:flex; align-items:center; justify-content:space-between; height:84px; }
+.brand { font-family:'Cormorant Garamond'; font-size:23px; letter-spacing:.16em; text-transform:uppercase; }
+.brand b { color:var(--gold); font-weight:500; }
+.nav-links { display:flex; gap:28px; align-items:center; }
+.nav-links a { font-size:12.5px; letter-spacing:.18em; text-transform:uppercase; color:var(--soft); transition:.3s; cursor:pointer; }
+.nav-links a:hover { color:var(--gold); }
+.menu-btn { display:none; background:none; border:none; color:var(--ivory); cursor:pointer; }
+@media(max-width:980px){ .nav-links{ display:none; } .menu-btn{ display:block; } }
+.hero { position:relative; min-height:100vh; display:flex; align-items:center; overflow:hidden;
+  background:radial-gradient(120% 90% at 50% -10%, #2a221c 0%, var(--ink) 55%); }
+.hero-glow { position:absolute; inset:0; pointer-events:none;
+  background:radial-gradient(420px 420px at var(--mx,60%) var(--my,35%), rgba(224,193,136,.20), transparent 60%); transition:background .25s; }
+.orb { position:absolute; border-radius:50%; filter:blur(60px); opacity:.5; pointer-events:none; }
+.orb.a { width:380px;height:380px; background:rgba(202,165,100,.22); top:-80px; right:-60px; }
+.orb.b { width:300px;height:300px; background:rgba(184,166,132,.16); bottom:-100px; left:-80px; }
+.hero-grid { position:relative; z-index:2; display:grid; grid-template-columns:1.15fr .85fr; gap:40px; align-items:center; width:100%; }
+.hero h1 { font-size:clamp(52px,8vw,108px); line-height:.96; letter-spacing:-.01em; }
+.hero h1 .it { font-style:italic; color:var(--gold); }
+.hero .lead { max-width:440px; margin:26px 0 34px; color:var(--soft); font-size:16px; }
+.hero-ctas { display:flex; gap:16px; flex-wrap:wrap; }
+.hero-stats { display:flex; gap:34px; margin-top:46px; }
+.hero-stats .n { font-family:'Cormorant Garamond'; font-size:36px; color:var(--gold); line-height:1; }
+.hero-stats .l { font-size:11px; letter-spacing:.22em; text-transform:uppercase; color:var(--soft); margin-top:6px; }
+.float-stack { position:relative; height:480px; }
+.hero-photo { position:absolute; inset:0; border-radius:8px; overflow:hidden; border:1px solid var(--line); box-shadow:0 40px 90px -40px rgba(0,0,0,.8); }
+.hero-photo img { width:100%; height:100%; object-fit:cover; filter:saturate(1.03) contrast(1.02); }
+.gcard { position:absolute; background:rgba(40,33,28,.62); border:1px solid var(--line); border-radius:6px;
+  backdrop-filter:blur(14px); padding:18px 20px; box-shadow:0 30px 70px -30px rgba(0,0,0,.7); z-index:3; }
+.gcard .ic { width:36px;height:36px; border-radius:50%; display:grid; place-items:center;
+  background:linear-gradient(135deg,var(--gold),var(--gold2)); color:var(--ink); margin-bottom:11px; }
+.gcard .t { font-family:'Cormorant Garamond'; font-size:20px; }
+.gcard .s { font-size:11px; letter-spacing:.18em; text-transform:uppercase; color:var(--soft); }
+.c1 { top:6px; left:0; animation:float 7s ease-in-out infinite; }
+.c2 { top:150px; right:-6px; animation:float 8.5s ease-in-out infinite .6s; }
+.c3 { bottom:14px; left:14%; animation:float 7.8s ease-in-out infinite 1.2s; }
+@keyframes float { 0%,100%{transform:translateY(0)} 50%{transform:translateY(-16px)} }
+@media(max-width:980px){ .hero-grid{ grid-template-columns:1fr; } .float-stack{ display:none; } .hero{ padding-top:120px; padding-bottom:60px; } }
+.marq-wrap { border-top:1px solid var(--line); border-bottom:1px solid var(--line); overflow:hidden; background:var(--ink2); }
+.marq { display:flex; white-space:nowrap; animation:marq 30s linear infinite; }
+.marq span { font-family:'Cormorant Garamond'; font-style:italic; font-size:22px; color:var(--beige); padding:18px 30px; }
+.marq span::after { content:'·'; color:var(--gold); margin-left:60px; }
+@keyframes marq { to { transform:translateX(-50%); } }
+.sec { padding:120px 0; position:relative; }
+.sec-head { max-width:720px; }
+.sec-head h2 { font-size:clamp(34px,5vw,60px); line-height:1.04; margin:16px 0; }
+.sec-head h2 .it { font-style:italic; color:var(--gold); }
+.about-grid { display:grid; grid-template-columns:1fr 1fr; gap:64px; align-items:center; }
+.about-vis { position:relative; aspect-ratio:4/5; border:1px solid var(--line); border-radius:6px;
+  background:linear-gradient(160deg,#2c241d,#171311); display:grid; place-items:center; overflow:hidden; }
+.about-vis .mono { font-family:'Cormorant Garamond'; font-size:120px; color:rgba(224,193,136,.14); }
+.about-vis .vis-img { position:absolute; inset:0; width:100%; height:100%; object-fit:cover; }
+.about-vis .badge { position:absolute; bottom:22px; left:22px; right:22px; background:rgba(21,17,15,.66);
+  border:1px solid var(--line); backdrop-filter:blur(10px); padding:16px 18px; border-radius:4px; z-index:2; }
+.values { margin-top:30px; }
+.value { display:flex; gap:18px; padding:20px 0; border-top:1px solid var(--line); }
+.value:last-child { border-bottom:1px solid var(--line); }
+.value .vn { font-family:'Cormorant Garamond'; color:var(--gold); font-size:18px; width:34px; }
+.value h4 { font-family:'Jost'; font-weight:500; font-size:15px; letter-spacing:.04em; }
+.value p { font-size:13.5px; color:var(--soft); margin-top:3px; }
+@media(max-width:900px){ .about-grid{ grid-template-columns:1fr; gap:38px; } }
+.svc-grid { display:grid; grid-template-columns:repeat(3,1fr); gap:1px; background:var(--line); border:1px solid var(--line); border-radius:6px; overflow:hidden; }
+.svc { background:var(--ink); padding:34px 30px; transition:.45s; position:relative; }
+.svc:hover { background:var(--ink2); }
+.svc .svc-img { width:100%; aspect-ratio:16/10; object-fit:cover; border-radius:4px; margin-bottom:18px; border:1px solid var(--line); display:block; }
+.svc .cat { font-size:10.5px; letter-spacing:.24em; text-transform:uppercase; color:var(--gold); }
+.svc h3 { font-size:27px; margin:14px 0 8px; transition:.4s; }
+.svc:hover h3 { color:var(--gold); }
+.svc p { font-size:13.5px; color:var(--soft); min-height:44px; }
+.svc .price { display:flex; align-items:center; justify-content:space-between; margin-top:20px; padding-top:18px; border-top:1px solid var(--line); }
+.svc .price b { font-family:'Cormorant Garamond'; font-size:24px; color:var(--ivory); font-weight:500; }
+.svc .price .from { font-size:10px; letter-spacing:.2em; text-transform:uppercase; color:var(--soft); }
+.svc .go { width:34px;height:34px;border-radius:50%;border:1px solid var(--line); display:grid;place-items:center; transition:.4s; cursor:pointer; }
+.svc:hover .go { background:var(--gold); color:var(--ink); border-color:var(--gold); }
+@media(max-width:900px){ .svc-grid{ grid-template-columns:1fr; } }
+.ba-grid { display:grid; grid-template-columns:repeat(3,1fr); gap:24px; }
+.ba { border:1px solid var(--line); border-radius:6px; overflow:hidden; background:var(--ink2); }
+.ba .stage { position:relative; aspect-ratio:3/4; overflow:hidden; user-select:none; }
+.ba .layer { position:absolute; inset:0; display:grid; place-items:center; }
+.ba .layer img { width:100%; height:100%; object-fit:cover; }
+.ba .after { background:linear-gradient(160deg,#3a2f24,#221b16); }
+.ba .before { background:linear-gradient(160deg,#211b16,#15110f); }
+.ba .tag { position:absolute; top:14px; left:14px; font-size:10px; letter-spacing:.22em; text-transform:uppercase; color:var(--gold); z-index:2; }
+.ba .mono { font-family:'Cormorant Garamond'; font-size:56px; color:rgba(224,193,136,.16); }
+.ba .expand { position:absolute; top:12px; right:12px; z-index:4; width:32px;height:32px;border-radius:50%; background:rgba(21,17,15,.72); border:1px solid var(--line); color:var(--ivory); display:grid;place-items:center; cursor:pointer; transition:.3s; }
+.ba .expand:hover{ border-color:var(--gold); color:var(--gold); }
+.ba input[type=range]{ position:absolute; bottom:14px; left:14px; right:14px; width:calc(100% - 28px); accent-color:var(--gold); z-index:3; }
+.ba .cap { padding:18px 20px; }
+.ba .cap .t { font-family:'Cormorant Garamond'; font-size:22px; display:flex; align-items:center; gap:8px; }
+.ba .cap .t .fstar { color:var(--gold); }
+.ba .cap .s { font-size:11px; letter-spacing:.16em; text-transform:uppercase; color:var(--soft); margin-top:2px; }
+.ba .cap .d { font-size:13px; color:var(--soft); margin-top:8px; line-height:1.45; }
+@media(max-width:900px){ .ba-grid{ grid-template-columns:1fr; } }
+.gal-grid { display:grid; grid-template-columns:repeat(3,1fr); gap:14px; }
+.gal { aspect-ratio:4/5; border:1px solid var(--line); border-radius:6px; overflow:hidden; background:var(--ink2); cursor:pointer; }
+.gal img { width:100%; height:100%; object-fit:cover; transition:.6s; }
+.gal:hover img { transform:scale(1.05); }
+.gal-empty { display:grid; place-items:center; height:100%; color:rgba(224,193,136,.4); font-family:'Cormorant Garamond'; font-size:30px; }
+@media(max-width:900px){ .gal-grid{ grid-template-columns:1fr 1fr; } }
+.team-grid { display:grid; grid-template-columns:repeat(4,1fr); gap:22px; }
+.tm { text-align:center; }
+.tm .ph { aspect-ratio:1/1; border-radius:8px; overflow:hidden; border:1px solid var(--line); background:var(--ink2); margin-bottom:14px; }
+.tm .ph img { width:100%; height:100%; object-fit:cover; }
+.tm h4 { font-family:'Cormorant Garamond'; font-size:23px; font-weight:400; }
+.tm .role { font-size:11px; letter-spacing:.2em; text-transform:uppercase; color:var(--gold); margin-top:4px; }
+@media(max-width:900px){ .team-grid{ grid-template-columns:1fr 1fr; } }
+.prod-grid { display:grid; grid-template-columns:repeat(4,1fr); gap:20px; }
+.prod { border:1px solid var(--line); border-radius:8px; overflow:hidden; background:var(--ink2); }
+.prod .ph { aspect-ratio:1/1; overflow:hidden; }
+.prod .ph img { width:100%; height:100%; object-fit:cover; transition:.5s; }
+.prod:hover .ph img { transform:scale(1.05); }
+.prod .pi { padding:16px 18px; }
+.prod .pi .nm { font-family:'Cormorant Garamond'; font-size:20px; }
+.prod .pi .pr { color:var(--gold); font-size:14px; margin-top:4px; }
+@media(max-width:900px){ .prod-grid{ grid-template-columns:1fr 1fr; } }
+.book-grid { display:grid; grid-template-columns:1fr 1fr; gap:56px; }
+.panel { background:var(--ink2); border:1px solid var(--line); border-radius:8px; padding:34px; }
+.field { margin-bottom:18px; }
+.field label { display:block; font-size:11px; letter-spacing:.18em; text-transform:uppercase; color:var(--soft); margin-bottom:8px; }
+.input, .select, .ta { width:100%; background:var(--ink); border:1px solid var(--line); color:var(--ivory); font-family:'Jost';
+  padding:13px 14px; border-radius:3px; font-size:14px; outline:none; transition:.3s; }
+.ta { resize:vertical; min-height:80px; line-height:1.5; }
+.input:focus,.select:focus,.ta:focus { border-color:var(--gold); }
+.slots { display:grid; grid-template-columns:repeat(4,1fr); gap:8px; }
+.slot { padding:11px 0; text-align:center; border:1px solid var(--line); border-radius:3px; font-size:13px; cursor:pointer; transition:.3s; color:var(--soft); }
+.slot:hover { border-color:var(--gold); color:var(--gold); }
+.slot.sel { background:var(--gold); color:var(--ink); border-color:var(--gold); font-weight:500; }
+.confirm { text-align:center; padding:20px 0; }
+.confirm .tick { width:64px;height:64px;border-radius:50%; margin:0 auto 18px; display:grid;place-items:center;
+  background:linear-gradient(135deg,var(--gold),var(--gold2)); color:var(--ink); }
+.track-row { display:flex; gap:10px; }
+.timeline { margin-top:24px; }
+.tl { display:flex; gap:16px; padding:14px 0; }
+.tl .dot { width:14px;height:14px;border-radius:50%; border:1px solid var(--gold); margin-top:5px; flex:none; }
+.tl.done .dot { background:var(--gold); }
+.tl .tt { font-family:'Cormorant Garamond'; font-size:19px; }
+@media(max-width:900px){ .book-grid{ grid-template-columns:1fr; gap:32px; } .slots{ grid-template-columns:repeat(3,1fr);} }
+.rev-grid { display:grid; grid-template-columns:repeat(3,1fr); gap:24px; }
+.rev { background:var(--ink2); border:1px solid var(--line); border-radius:6px; padding:30px; }
+.rev .stars { color:var(--gold); display:flex; gap:3px; margin-bottom:14px; }
+.rev p { font-family:'Cormorant Garamond'; font-size:21px; font-style:italic; line-height:1.4; color:var(--ivory); }
+.rev .who { display:flex; align-items:center; gap:12px; margin-top:18px; }
+.rev .who img { width:42px; height:42px; border-radius:50%; object-fit:cover; border:1px solid var(--line); }
+.rev .by { font-size:12px; letter-spacing:.16em; text-transform:uppercase; color:var(--soft); }
+@media(max-width:900px){ .rev-grid{ grid-template-columns:1fr; } }
+.cta-band { display:grid; grid-template-columns:1.1fr .9fr; gap:48px; align-items:stretch; }
+.contact-list { display:grid; }
+.crow { display:flex; align-items:center; gap:18px; padding:22px 0; border-top:1px solid var(--line); }
+.crow:last-child{ border-bottom:1px solid var(--line); }
+.crow .ic { width:46px;height:46px;border-radius:50%;border:1px solid var(--line); display:grid;place-items:center; color:var(--gold); flex:none; }
+.crow .l { font-size:11px; letter-spacing:.2em; text-transform:uppercase; color:var(--soft); }
+.crow .v { font-family:'Cormorant Garamond'; font-size:21px; }
+.crow a.v:hover{ color:var(--gold); }
+.map { border:1px solid var(--line); border-radius:8px; overflow:hidden; min-height:340px; }
+.map iframe { width:100%; height:100%; min-height:340px; border:0; filter:grayscale(.4) contrast(1.05) brightness(.9); }
+.contact-actions{ display:flex; gap:12px; margin-top:24px; flex-wrap:wrap; }
+@media(max-width:900px){ .cta-band{ grid-template-columns:1fr; } }
+.foot { border-top:1px solid var(--line); padding:54px 0 104px; }
+.foot-grid { display:flex; justify-content:space-between; align-items:flex-end; flex-wrap:wrap; gap:24px; }
+.foot .tiny { font-size:12px; color:var(--soft); }
+.adminlink { font-size:11px; letter-spacing:.2em; text-transform:uppercase; color:var(--beige); cursor:pointer; opacity:.6; transition:.3s; background:none;border:none;font-family:'Jost'; }
+.adminlink:hover{ opacity:1; color:var(--gold); }
+.drawer { position:fixed; inset:0; z-index:60; background:rgba(21,17,15,.97); backdrop-filter:blur(10px); display:grid; place-items:center; }
+.drawer a { font-family:'Cormorant Garamond'; font-size:32px; padding:12px; color:var(--ivory); cursor:pointer; }
+.drawer .close{ position:absolute; top:28px; right:24px; background:none;border:none;color:var(--ivory);cursor:pointer; }
+/* glowframe credit badge */
+.gf-badge { position:fixed; right:20px; bottom:20px; z-index:80; display:inline-flex; align-items:center; gap:9px;
+  padding:8px 16px 8px 8px; border-radius:40px; background:rgba(29,24,21,.72); border:1px solid var(--line);
+  backdrop-filter:blur(16px); -webkit-backdrop-filter:blur(16px); box-shadow:0 12px 34px -12px rgba(0,0,0,.7); cursor:pointer;
+  transition:transform .35s cubic-bezier(.2,.7,.2,1), box-shadow .35s, border-color .35s; }
+.gf-badge:hover { transform:translateY(-3px) scale(1.05); border-color:var(--gold);
+  box-shadow:0 18px 46px -12px rgba(224,193,136,.55), 0 0 0 1px rgba(224,193,136,.28); }
+.gf-badge img { width:28px; height:28px; border-radius:50%; display:block; flex:none; }
+.gf-badge .gf-txt { font-family:'Jost'; font-size:12.5px; letter-spacing:.05em; color:var(--soft); white-space:nowrap; line-height:1; }
+.gf-badge .gf-txt b { font-family:'Cormorant Garamond'; font-weight:500; font-size:16px; color:var(--ivory); letter-spacing:.02em; }
+.gf-badge:hover .gf-txt b { color:var(--gold); }
+@media(max-width:560px){ .gf-badge{ right:14px; bottom:14px; padding:6px 14px 6px 6px; gap:8px; } .gf-badge img{ width:24px;height:24px; } .gf-badge .gf-txt{ font-size:11.5px; } .gf-badge .gf-txt b{ font-size:14px; } }
+/* lightbox */
+.lb { position:fixed; inset:0; z-index:90; background:rgba(10,8,7,.93); backdrop-filter:blur(8px); display:grid; place-items:center; padding:24px; animation:lbin .3s ease; }
+@keyframes lbin { from{opacity:0} to{opacity:1} }
+.lb .lbclose { position:absolute; top:22px; right:24px; background:none; border:1px solid var(--line); color:var(--ivory); width:46px;height:46px;border-radius:50%; display:grid;place-items:center; cursor:pointer; transition:.3s; }
+.lb .lbclose:hover{ border-color:var(--gold); color:var(--gold); }
+.lb img.full { max-width:92vw; max-height:86vh; border-radius:8px; object-fit:contain; }
+.lb .lb-ba { width:min(540px,92vw); }
+.lb .lb-cap { text-align:center; margin-top:16px; color:var(--soft); font-size:13px; letter-spacing:.04em; }
+.lb .lb-cap b { color:var(--gold); font-weight:500; }
+/* admin */
+.admin { min-height:100vh; background:var(--ink); display:flex; }
+.aside { width:248px; flex:none; border-right:1px solid var(--line); padding:28px 18px; position:sticky; top:0; height:100vh; display:flex; flex-direction:column; }
+.aside .brand { display:block; margin-bottom:26px; padding:0 10px; font-size:18px; }
+.aitem { display:flex; align-items:center; gap:13px; padding:11px 14px; border-radius:4px; cursor:pointer; color:var(--soft); font-size:13.5px; letter-spacing:.04em; transition:.3s; }
+.aitem:hover { background:var(--ink2); color:var(--ivory); }
+.aitem.on { background:var(--ink3); color:var(--gold); }
+.amain { flex:1; padding:34px 38px; max-width:100%; overflow:auto; }
+.atabs { display:none; }
+.atop { display:flex; justify-content:space-between; align-items:center; margin-bottom:26px; gap:16px; flex-wrap:wrap; }
+.atop h2 { font-size:34px; }
+.kpis { display:grid; grid-template-columns:repeat(4,1fr); gap:18px; margin-bottom:30px; }
+.kpi { background:var(--ink2); border:1px solid var(--line); border-radius:7px; padding:22px; }
+.kpi .l { font-size:11px; letter-spacing:.18em; text-transform:uppercase; color:var(--soft); }
+.kpi .n { font-family:'Cormorant Garamond'; font-size:40px; color:var(--gold); line-height:1.1; margin-top:6px; }
+.kpi .d { font-size:12px; color:var(--beige); margin-top:4px; }
+.card { background:var(--ink2); border:1px solid var(--line); border-radius:7px; padding:24px; margin-bottom:22px; }
+.card h3 { font-size:22px; margin-bottom:16px; }
+.tbl { width:100%; border-collapse:collapse; font-size:13.5px; }
+.tbl th { text-align:left; font-family:'Jost'; font-weight:500; font-size:11px; letter-spacing:.16em; text-transform:uppercase; color:var(--soft); padding:10px 12px; border-bottom:1px solid var(--line); }
+.tbl td { padding:13px 12px; border-bottom:1px solid rgba(224,193,136,.08); color:var(--ivory); }
+.pill { font-size:11px; letter-spacing:.12em; text-transform:uppercase; padding:5px 11px; border-radius:20px; border:1px solid var(--line); }
+.pill.Confirmed { color:#9ec5ff; border-color:rgba(158,197,255,.35); }
+.pill.InProgress { color:var(--gold); }
+.pill.Completed { color:#9be3b0; border-color:rgba(155,227,176,.35); }
+.pill.Rescheduled { color:#e8b27e; border-color:rgba(232,178,126,.35); }
+.mini { display:inline-flex; align-items:center; gap:6px; background:none; border:1px solid var(--line); color:var(--soft); padding:7px 12px; border-radius:3px; font-size:12px; cursor:pointer; font-family:'Jost'; transition:.3s; }
+.mini:hover{ border-color:var(--gold); color:var(--gold); }
+.mini.icon { padding:7px 9px; }
+.row2 { display:grid; grid-template-columns:1fr 1fr; gap:16px; }
+.row3 { display:grid; grid-template-columns:1fr 1fr 1fr; gap:14px; }
+.img-slot { position:relative; border:1px solid var(--line); border-radius:6px; overflow:hidden; background:var(--ink); }
+.img-slot img { width:100%; height:100%; object-fit:cover; display:block; }
+.img-empty { display:flex; flex-direction:column; gap:6px; place-items:center; justify-content:center; height:100%; color:var(--soft); font-size:12px; text-align:center; }
+.img-actions { display:flex; gap:8px; margin:10px 0 8px; flex-wrap:wrap; }
+.ba-edit { display:grid; grid-template-columns:1fr 1fr; gap:14px; margin-top:12px; }
+.toggle { display:inline-flex; align-items:center; gap:10px; cursor:pointer; }
+.tg { width:46px; height:26px; border-radius:20px; background:var(--ink3); border:1px solid var(--line); position:relative; transition:.3s; flex:none; }
+.tg::after { content:''; position:absolute; top:2px; left:2px; width:20px; height:20px; border-radius:50%; background:var(--soft); transition:.3s; }
+.toggle.on .tg { background:linear-gradient(135deg,var(--gold),var(--gold2)); border-color:var(--gold); }
+.toggle.on .tg::after { left:22px; background:var(--ink); }
+.editrow { border-top:1px solid var(--line); padding-top:16px; margin-top:16px; }
+.editrow:first-of-type { border-top:none; padding-top:0; margin-top:0; }
+.eh { display:flex; justify-content:space-between; align-items:center; gap:10px; margin-bottom:12px; }
+.eh .ord { display:flex; gap:6px; }
+.gal-manage { display:grid; grid-template-columns:repeat(4,1fr); gap:12px; }
+.gal-tile { position:relative; aspect-ratio:4/5; border:1px solid var(--line); border-radius:6px; overflow:hidden; }
+.gal-tile img { width:100%; height:100%; object-fit:cover; }
+.gal-tile .ctrls { position:absolute; top:6px; right:6px; left:6px; display:flex; justify-content:space-between; }
+.gal-tile .gb { background:rgba(21,17,15,.82); border:1px solid var(--line); color:var(--ivory); width:26px;height:26px;border-radius:50%; display:grid;place-items:center; cursor:pointer; }
+.gal-tile .gb:hover { border-color:var(--gold); color:var(--gold); }
+.gal-add { aspect-ratio:4/5; border:1px dashed var(--line); border-radius:6px; display:flex; flex-direction:column; gap:6px; align-items:center; justify-content:center; color:var(--soft); cursor:pointer; text-align:center; }
+.gal-add:hover { border-color:var(--gold); color:var(--gold); }
+.login { min-height:100vh; display:grid; place-items:center; background:radial-gradient(120% 90% at 50% 0%, #2a221c, var(--ink)); }
+.login .box { width:360px; max-width:90vw; background:var(--ink2); border:1px solid var(--line); border-radius:10px; padding:40px; text-align:center; }
+.login .box h2 { font-size:30px; margin-bottom:6px; }
+@media(max-width:900px){
+  .aside{ display:none; }
+  .amain{ padding:20px 18px; }
+  .kpis{ grid-template-columns:1fr 1fr; }
+  .row2,.row3,.ba-edit{ grid-template-columns:1fr; }
+  .gal-manage{ grid-template-columns:1fr 1fr; }
+  .team-grid,.prod-grid{ grid-template-columns:1fr 1fr; }
+  .atabs{ display:flex; gap:8px; overflow-x:auto; padding:12px 0 14px; margin-bottom:10px; position:sticky; top:0; background:var(--ink); z-index:5; border-bottom:1px solid var(--line); }
+  .atab{ white-space:nowrap; padding:9px 14px; border:1px solid var(--line); border-radius:20px; font-size:12.5px; color:var(--soft); background:none; cursor:pointer; font-family:'Jost'; flex:none; display:inline-flex; align-items:center; gap:7px; }
+  .atab.on{ background:var(--ink3); color:var(--gold); border-color:var(--gold); }
+  .atab.exit{ color:var(--beige); }
+}
+`;
+
+function useReveal() {
+  useEffect(() => {
+    const els = document.querySelectorAll(".reveal");
+    const io = new IntersectionObserver((es) => {
+      es.forEach((e) => { if (e.isIntersecting) { e.target.classList.add("in"); io.unobserve(e.target); } });
+    }, { threshold: 0.14 });
+    els.forEach((el) => io.observe(el));
+    return () => io.disconnect();
+  });
+}
+
+/* glowframe floating credit */
+function GlowFrameBadge() {
+  return (
+    <a className="gf-badge" href={GF_URL} target="_blank" rel="noopener noreferrer" aria-label="Website made by GlowFrame">
+      <img src={GF_LOGO} alt="GlowFrame" />
+      <span className="gf-txt">Made by <b>GlowFrame</b></span>
+    </a>
+  );
+}
+
+/* fullscreen lightbox */
+function Lightbox({ box, onClose }) {
+  useEffect(() => {
+    const onKey = (e) => e.key === "Escape" && onClose();
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+  }, [onClose]);
+  if (!box) return null;
+  return (
+    <div className="lb" onClick={onClose}>
+      <button className="lbclose" onClick={onClose}><X size={22} /></button>
+      <div onClick={(e) => e.stopPropagation()}>
+        {box.type === "image" && <img className="full" src={box.src} alt="" />}
+        {box.type === "trans" && (
+          <div>
+            <div className="lb-ba"><BeforeAfter item={box.item} /></div>
+            <div className="lb-cap"><b>{box.item.service}</b>{box.item.client ? ` · ${box.item.client}` : ""}{box.item.date ? ` · ${new Date(box.item.date).toLocaleDateString("en-IN")}` : ""}</div>
+          </div>
+        )}
+      </div>
+    </div>
+  );
+}
+
+/* =============================== APP =============================== */
+function App() {
+  const [data, setData] = useState(null);
+  const [view, setView] = useState("site");
+  const [session, setSession] = useState(null);
+  const [scrolled, setScrolled] = useState(false);
+  const [menu, setMenu] = useState(false);
+
+  useEffect(() => {
+    loadContent().then(setData);
+    db.auth.getSession().then(({ data }) => setSession(data.session));
+    const { data: sub } = db.auth.onAuthStateChange((_e, s) => setSession(s));
+    const onScroll = () => setScrolled(window.scrollY > 40);
+    window.addEventListener("scroll", onScroll);
+    return () => { window.removeEventListener("scroll", onScroll); sub.subscription.unsubscribe(); };
+  }, []);
+
+  useEffect(() => {
+    if (session) fetchAppointments().then((a) => setData((d) => d ? { ...d, appointments: a } : d));
+  }, [session]);
+
+  const update = (next) => { setData(next); saveContent(next); };
+  const refreshAppts = async () => { const a = await fetchAppointments(); setData((d) => ({ ...d, appointments: a })); };
+  if (!data) return <div style={{ minHeight: "100vh", background: "#15110f" }} />;
+
+  return (
+    <div className="bm">
+      <style>{CSS}</style>
+      {view === "site"
+        ? <Site data={data} update={update} scrolled={scrolled} menu={menu} setMenu={setMenu}
+            goAdmin={() => { setView("admin"); window.scrollTo(0, 0); }} />
+        : session
+          ? <Admin data={data} update={update} refreshAppts={refreshAppts}
+              viewSite={() => { setView("site"); window.scrollTo(0, 0); }}
+              logout={async () => { await db.auth.signOut(); setView("site"); window.scrollTo(0, 0); }} />
+          : <Login exit={() => setView("site")} />}
+      {data.settings.creditsEnabled && <GlowFrameBadge />}
+    </div>
+  );
+}
+
+/* =============================== SITE =============================== */
+function Site({ data, update, scrolled, menu, setMenu, goAdmin }) {
+  useReveal();
+  const { settings, services, reviews, content, media } = data;
+  const [box, setBox] = useState(null);
+  const heroRef = useRef(null);
+  const onMove = (e) => {
+    const r = heroRef.current.getBoundingClientRect();
+    heroRef.current.style.setProperty("--mx", `${((e.clientX - r.left) / r.width) * 100}%`);
+    heroRef.current.style.setProperty("--my", `${((e.clientY - r.top) / r.height) * 100}%`);
+  };
+  const links = [["Experience", "about"], ["Services", "services"], ["Transformations", "work"], ["Gallery", "gallery"]];
+  if (media.team.length) links.push(["Team", "team"]);
+  links.push(["Book", "book"], ["Visit", "contact"]);
+  const go = (id) => { setMenu(false); document.getElementById(id)?.scrollIntoView({ behavior: "smooth" }); };
+
+  return (
+    <div style={{ scrollBehavior: "smooth" }}>
+      <nav className={`nav ${scrolled ? "scrolled" : ""}`}>
+        <div className="wrap row">
+          <div className="brand">Bansal's <b>Makeover</b></div>
+          <div className="nav-links">
+            {links.map(([l, id]) => <a key={id} onClick={() => go(id)}>{l}</a>)}
+            <button className="btn btn-gold" style={{ padding: "11px 20px" }} onClick={() => go("book")}>Book Now</button>
+          </div>
+          <button className="menu-btn" onClick={() => setMenu(true)}><Menu size={26} /></button>
+        </div>
+      </nav>
+
+      {menu && (
+        <div className="drawer">
+          <button className="close" onClick={() => setMenu(false)}><X size={28} /></button>
+          {links.map(([l, id]) => <a key={id} onClick={() => go(id)}>{l}</a>)}
+        </div>
+      )}
+
+      <header className="hero" ref={heroRef} onMouseMove={onMove}>
+        <div className="hero-glow" />
+        <div className="orb a" /><div className="orb b" />
+        <div className="wrap hero-grid">
+          <div>
+            <div className="eyebrow reveal in">Tandalja · Vadodara</div>
+            <h1 className="reveal in" style={{ marginTop: 18 }}>
+              {content.heroLine1}<br /><span className="it">{content.heroLine2}</span>
+            </h1>
+            <p className="lead reveal in">{content.heroLead}</p>
+            <div className="hero-ctas reveal in">
+              <button className="btn btn-gold" onClick={() => go("book")}>Book Appointment <ArrowRight size={16} /></button>
+              <button className="btn btn-ghost" onClick={() => go("services")}>View Services</button>
+            </div>
+            <div className="hero-stats reveal in">
+              <div><div className="n">10+</div><div className="l">Signature Services</div></div>
+              <div><div className="n">5.0</div><div className="l">Client Rating</div></div>
+              <div><div className="n">100%</div><div className="l">Sanitised Tools</div></div>
+            </div>
+          </div>
+          <div className="float-stack">
+            {media.hero && <div className="hero-photo"><img src={media.hero} alt="Bansal's Makeover studio" /></div>}
+            <div className="gcard c1"><div className="ic"><Scissors size={17} /></div><div className="t">Hair Studio</div><div className="s">Cut · Colour · Care</div></div>
+            <div className="gcard c2"><div className="ic"><Sparkles size={17} /></div><div className="t">Makeover</div><div className="s">Bridal · Party</div></div>
+            <div className="gcard c3"><div className="ic"><Star size={17} /></div><div className="t">Luxury Care</div><div className="s">By appointment</div></div>
+          </div>
+        </div>
+      </header>
+
+      <div className="marq-wrap">
+        <div className="marq">
+          {[...Array(2)].map((_, k) => (
+            <div style={{ display: "flex" }} key={k}>
+              {["Haircut & Styling", "Balayage", "Keratin", "Bridal Makeup", "Skincare", "Smoothening", "Hair Colour", "Grooming"].map((w, i) => <span key={i}>{w}</span>)}
+            </div>
+          ))}
+        </div>
+      </div>
+
+      <section className="sec" id="about">
+        <div className="wrap about-grid">
+          <div className="about-vis reveal">
+            {media.about
+              ? <img className="vis-img" src={media.about} alt="Inside the studio" />
+              : <div className="mono">B<span style={{ color: "var(--gold)", opacity: .5 }}>M</span></div>}
+            <div className="badge">
+              <div className="eyebrow">The Studio</div>
+              <div style={{ fontFamily: "Cormorant Garamond", fontSize: 22, marginTop: 6 }}>Where detail becomes a standard.</div>
+            </div>
+          </div>
+          <div className="reveal">
+            <div className="eyebrow">The Experience</div>
+            <h2 style={{ fontFamily: "Cormorant Garamond", fontSize: "clamp(32px,4.5vw,52px)", lineHeight: 1.06, margin: "14px 0 18px" }}>
+              {content.aboutHead} <span style={{ fontStyle: "italic", color: "var(--gold)" }}>{content.aboutAccent}</span>
+            </h2>
+            <p className="muted" style={{ fontSize: 15.5 }}>{content.aboutBody}</p>
+            <div className="values">
+              {[
+                ["01", "Honest Consultation", "We tell you what suits you, not what costs more."],
+                ["02", "Clinical Hygiene", "Single-use and sterilised tools, every single time."],
+                ["03", "Premium Products", "Salon-grade systems that protect your hair long-term."],
+                ["04", "Personalised Results", "A look built around your face, lifestyle and intent."],
+              ].map(([n, h, p]) => (
+                <div className="value" key={n}><div className="vn">{n}</div><div><h4>{h}</h4><p>{p}</p></div></div>
+              ))}
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <div className="wrap"><div className="gline" /></div>
+
+      <section className="sec" id="services">
+        <div className="wrap">
+          <div className="sec-head reveal" style={{ marginBottom: 48 }}>
+            <div className="eyebrow">The Menu</div>
+            <h2>Services, treated like <span className="it">craft.</span></h2>
+            <p className="muted">From precision cuts to full bridal makeovers — each priced transparently, each delivered with care.</p>
+          </div>
+          <div className="svc-grid reveal">
+            {services.map((s) => (
+              <div className="svc" key={s.id}>
+                {s.img && <img className="svc-img" src={s.img} alt={s.name} />}
+                <div className="cat">{s.cat}</div>
+                <h3>{s.name}</h3>
+                <p>{s.desc}</p>
+                <div className="price">
+                  <div><div className="from">from</div><b>{inr(s.price)}</b></div>
+                  <div className="go" onClick={() => go("book")}><ArrowUpRight size={16} /></div>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      <section className="sec" id="work" style={{ background: "var(--ink2)" }}>
+        <div className="wrap">
+          <div className="sec-head reveal" style={{ marginBottom: 44 }}>
+            <div className="eyebrow">Transformation Gallery</div>
+            <h2>Drag to reveal the <span className="it">after.</span></h2>
+            <p className="muted">Real results, presented like an editorial. Tap the expand icon to view fullscreen.</p>
+          </div>
+          <div className="ba-grid reveal">
+            {media.transformations.map((item) => (
+              <BeforeAfter key={item.id} item={item} onExpand={() => setBox({ type: "trans", item })} />
+            ))}
+          </div>
+        </div>
+      </section>
+
+      <section className="sec" id="gallery">
+        <div className="wrap">
+          <div className="sec-head reveal" style={{ marginBottom: 44 }}>
+            <div className="eyebrow">The Gallery</div>
+            <h2>A look inside the <span className="it">work.</span></h2>
+            <p className="muted">Cuts, colour, bridal and the space itself. Tap any image to view it fullscreen.</p>
+          </div>
+          <div className="gal-grid reveal">
+            {media.gallery.length > 0
+              ? media.gallery.map((src, i) => <div className="gal" key={i} onClick={() => setBox({ type: "image", src })}><img src={src} alt={`Gallery ${i + 1}`} /></div>)
+              : [...Array(6)].map((_, i) => <div className="gal" key={i} style={{ cursor: "default" }}><div className="gal-empty">BM</div></div>)}
+          </div>
+        </div>
+      </section>
+
+      {media.products.length > 0 && (
+        <section className="sec" id="products">
+          <div className="wrap">
+            <div className="sec-head reveal" style={{ marginBottom: 44 }}>
+              <div className="eyebrow">The Shelf</div>
+              <h2>Products we <span className="it">stand behind.</span></h2>
+            </div>
+            <div className="prod-grid reveal">
+              {media.products.map((p) => (
+                <div className="prod" key={p.id}>
+                  <div className="ph">{p.img ? <img src={p.img} alt={p.name} /> : <div className="gal-empty" style={{ height: "100%" }}>BM</div>}</div>
+                  <div className="pi"><div className="nm">{p.name}</div>{p.price && <div className="pr">{p.price}</div>}</div>
+                </div>
+              ))}
+            </div>
+          </div>
+        </section>
+      )}
+
+      <section className="sec" id="book" style={{ background: "var(--ink2)" }}>
+        <div className="wrap">
+          <div className="sec-head reveal" style={{ margin: "0 auto 48px", textAlign: "center" }}>
+            <div className="eyebrow">Reservations</div>
+            <h2>Book your <span className="it">appointment.</span></h2>
+          </div>
+          <div className="book-grid">
+            <Booking data={data} update={update} />
+            <StatusTracker />
+          </div>
+        </div>
+      </section>
+
+      <section className="sec">
+        <div className="wrap">
+          <div className="sec-head reveal" style={{ marginBottom: 44 }}>
+            <div className="eyebrow">In Their Words</div>
+            <h2>Clients who came back <span className="it">for the feeling.</span></h2>
+          </div>
+          <div className="rev-grid reveal">
+            {reviews.map((r) => (
+              <div className="rev" key={r.id}>
+                <div className="stars">{[...Array(r.rating)].map((_, i) => <Star key={i} size={15} fill="currentColor" />)}</div>
+                <p>"{r.text}"</p>
+                <div className="who">
+                  {r.img && <img src={r.img} alt={r.name} />}
+                  <div className="by">{r.name} · {r.service}</div>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {media.team.length > 0 && (
+        <section className="sec" id="team" style={{ background: "var(--ink2)" }}>
+          <div className="wrap">
+            <div className="sec-head reveal" style={{ marginBottom: 44 }}>
+              <div className="eyebrow">The Artists</div>
+              <h2>The hands behind <span className="it">the work.</span></h2>
+            </div>
+            <div className="team-grid reveal">
+              {media.team.map((t) => (
+                <div className="tm" key={t.id}>
+                  <div className="ph">{t.img ? <img src={t.img} alt={t.name} /> : <div className="gal-empty" style={{ height: "100%" }}>BM</div>}</div>
+                  <h4>{t.name}</h4>
+                  <div className="role">{t.role}</div>
+                </div>
+              ))}
+            </div>
+          </div>
+        </section>
+      )}
+
+      <section className="sec" id="contact">
+        <div className="wrap">
+          <div className="cta-band">
+            <div className="reveal">
+              <div className="eyebrow">Visit Us</div>
+              <h2 style={{ fontFamily: "Cormorant Garamond", fontSize: "clamp(32px,4.5vw,52px)", margin: "14px 0 8px" }}>
+                Come see the <span style={{ fontStyle: "italic", color: "var(--gold)" }}>difference.</span>
+              </h2>
+              <div className="contact-list">
+                <div className="crow"><div className="ic"><MapPin size={20} /></div><div><div className="l">Studio</div><div className="v" style={{ fontSize: 18, lineHeight: 1.3 }}>{settings.address}</div></div></div>
+                <div className="crow"><div className="ic"><Phone size={20} /></div><div><div className="l">Call</div><a className="v" href={`tel:+91${settings.phone}`}>+91 {settings.phone}</a></div></div>
+                <div className="crow"><div className="ic"><Clock size={20} /></div><div><div className="l">Hours</div><div className="v" style={{ fontSize: 18 }}>{settings.hoursWeek}</div><div className="muted" style={{ fontSize: 13 }}>{settings.hoursOff}</div></div></div>
+              </div>
+              <div className="contact-actions">
+                <a className="btn btn-gold" href={`tel:+91${settings.phone}`}><Phone size={15} /> Call Now</a>
+                <a className="btn btn-ghost" href={`https://wa.me/91${settings.whatsapp}`} target="_blank" rel="noreferrer"><MessageCircle size={15} /> WhatsApp</a>
+                <a className="btn btn-ghost" href={settings.mapsLink} target="_blank" rel="noreferrer"><MapPin size={15} /> Directions</a>
+              </div>
+            </div>
+            <div className="map reveal">
+              <iframe title="map" loading="lazy" src={`https://maps.google.com/maps?q=${encodeURIComponent(settings.address)}&output=embed`} />
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <footer className="foot">
+        <div className="wrap foot-grid">
+          <div>
+            <div className="brand" style={{ fontSize: 22 }}>Bansal's <b>Makeover</b></div>
+            <div className="tiny" style={{ marginTop: 10, maxWidth: 320 }}>{settings.tagline} — premium hair, makeup and skincare in Tandalja, Vadodara.</div>
+            <button className="adminlink" style={{ marginTop: 16 }} onClick={goAdmin}>Admin Login</button>
+          </div>
+          <div style={{ textAlign: "right" }}>
+            <div className="tiny">© {new Date().getFullYear()} Bansal's Makeover</div>
+          </div>
+        </div>
+      </footer>
+
+      <Lightbox box={box} onClose={() => setBox(null)} />
+    </div>
+  );
+}
+
+function BeforeAfter({ item, onExpand }) {
+  const [v, setV] = useState(50);
+  return (
+    <div className="ba">
+      <div className="stage">
+        <div className="layer after">
+          <span className="tag">After</span>
+          {item.after ? <img src={item.after} alt="After" /> : <div className="mono">After</div>}
+        </div>
+        <div className="layer before" style={{ clipPath: `inset(0 ${100 - v}% 0 0)` }}>
+          <span className="tag">Before</span>
+          {item.before ? <img src={item.before} alt="Before" /> : <div className="mono">Before</div>}
+        </div>
+        {onExpand && <button className="expand" onClick={onExpand} aria-label="View fullscreen"><Maximize2 size={15} /></button>}
+        <input type="range" min="0" max="100" value={v} onChange={(e) => setV(+e.target.value)} aria-label="Reveal transformation" />
+      </div>
+      <div className="cap">
+        <div className="t">{item.featured && <Star className="fstar" size={15} fill="currentColor" />}{item.service}</div>
+        <div className="s">{item.client}{item.date ? ` · ${new Date(item.date).toLocaleDateString("en-IN", { month: "short", year: "numeric" })}` : ""}</div>
+        {item.desc && <div className="d">{item.desc}</div>}
+      </div>
+    </div>
+  );
+}
+
+function Booking({ data, update }) {
+  const [step, setStep] = useState(0);
+  const [f, setF] = useState({ service: data.services[0].name, date: today(0), time: "", name: "", phone: "" });
+  const slots = ["10:30", "11:30", "12:30", "14:00", "15:00", "16:00", "17:30", "18:30"];
+  const [busy, setBusy] = useState(false);
+  const [bookErr, setBookErr] = useState("");
+  const submit = async () => {
+    const svc = data.services.find((s) => s.name === f.service);
+    setBusy(true); setBookErr("");
+    const { error } = await db.rpc("create_booking", {
+      p_name: f.name, p_phone: f.phone, p_service: f.service,
+      p_date: f.date, p_time: f.time, p_price: svc ? svc.price : 0,
+    });
+    setBusy(false);
+    if (error) { setBookErr("Couldn't confirm right now. Please call or WhatsApp us."); return; }
+    setStep(1);
+  };
+  const valid = f.service && f.date && f.time && f.name.trim() && f.phone.trim().length >= 10;
+
+  if (step === 1) return (
+    <div className="panel confirm">
+      <div className="tick"><Check size={30} /></div>
+      <h3 style={{ fontFamily: "Cormorant Garamond", fontSize: 30 }}>Appointment Confirmed</h3>
+      <p className="muted" style={{ margin: "10px 0 22px" }}>
+        {f.name}, you're booked for <b style={{ color: "var(--gold)" }}>{f.service}</b> on {f.date} at {f.time}. We'll WhatsApp you a reminder.
+      </p>
+      <button className="btn btn-ghost" onClick={() => { setStep(0); setF({ ...f, time: "", name: "", phone: "" }); }}>Book Another</button>
+    </div>
+  );
+
+  return (
+    <div className="panel">
+      <div className="eyebrow" style={{ marginBottom: 18 }}>New Booking</div>
+      <div className="field">
+        <label>Service</label>
+        <select className="select" value={f.service} onChange={(e) => setF({ ...f, service: e.target.value })}>
+          {data.services.map((s) => <option key={s.id} value={s.name}>{s.name} — {inr(s.price)}</option>)}
+        </select>
+      </div>
+      <div className="row2">
+        <div className="field"><label>Date</label><input className="input" type="date" min={today(0)} value={f.date} onChange={(e) => setF({ ...f, date: e.target.value })} /></div>
+        <div className="field"><label>Your Name</label><input className="input" placeholder="Full name" value={f.name} onChange={(e) => setF({ ...f, name: e.target.value })} /></div>
+      </div>
+      <div className="field"><label>Mobile Number</label><input className="input" placeholder="10-digit number" value={f.phone} onChange={(e) => setF({ ...f, phone: e.target.value.replace(/\D/g, "").slice(0, 10) })} /></div>
+      <div className="field">
+        <label>Time Slot</label>
+        <div className="slots">
+          {slots.map((t) => <div key={t} className={`slot ${f.time === t ? "sel" : ""}`} onClick={() => setF({ ...f, time: t })}>{t}</div>)}
+        </div>
+      </div>
+      {bookErr && <div style={{ color: "#e8917e", fontSize: 13, marginBottom: 12 }}>{bookErr}</div>}
+      <button className="btn btn-gold" style={{ width: "100%", justifyContent: "center", opacity: (valid && !busy) ? 1 : .5, pointerEvents: (valid && !busy) ? "auto" : "none" }} onClick={submit}>
+        {busy ? "Confirming…" : <>Confirm Booking <ArrowRight size={16} /></>}
+      </button>
+    </div>
+  );
+}
+
+function StatusTracker() {
+  const [phone, setPhone] = useState("");
+  const [found, setFound] = useState(undefined);
+  const search = async () => {
+    const { data } = await db.rpc("get_appointment_status", { p: phone });
+    setFound((data && data[0]) ? data[0] : null);
+  };
+  const order = ["Confirmed", "In Progress", "Completed"];
+  return (
+    <div className="panel">
+      <div className="eyebrow" style={{ marginBottom: 18 }}>Track Appointment</div>
+      <p className="muted" style={{ fontSize: 14, marginBottom: 16 }}>Enter the mobile number you booked with to see live status.</p>
+      <div className="track-row">
+        <input className="input" placeholder="Mobile number" value={phone} onChange={(e) => setPhone(e.target.value.replace(/\D/g, "").slice(0, 10))} />
+        <button className="btn btn-gold" onClick={search}>Track</button>
+      </div>
+      {found === null && <p className="muted" style={{ marginTop: 18 }}>No appointment found for that number. Book one above.</p>}
+      {found && (
+        <div className="timeline">
+          <div style={{ fontFamily: "Cormorant Garamond", fontSize: 23, marginBottom: 6 }}>{found.service}</div>
+          <div className="muted" style={{ fontSize: 13, marginBottom: 8 }}>{found.date} · {found.time}</div>
+          {found.status === "Rescheduled"
+            ? <div className="tl done"><div className="dot" /><div><div className="tt" style={{ color: "var(--gold)" }}>Rescheduled</div></div></div>
+            : order.map((s, i) => {
+                const done = order.indexOf(found.status) >= i;
+                return <div className={`tl ${done ? "done" : ""}`} key={s}><div className="dot" /><div><div className="tt" style={{ color: done ? "var(--gold)" : "var(--soft)" }}>{s}</div></div></div>;
+              })}
+        </div>
+      )}
+    </div>
+  );
+}
+
+/* ----------------------------- image input ----------------------------- */
+function ImageInput({ value, onChange, ratio }) {
+  const [busy, setBusy] = useState(false);
+  const [upErr, setUpErr] = useState("");
+  const pick = async (e) => {
+    const file = e.target.files[0]; if (!file) return;
+    setBusy(true); setUpErr("");
+    try { onChange(await uploadImage(file)); }
+    catch { setUpErr("Upload failed — paste an image URL instead, or finish storage setup."); }
+    setBusy(false);
+  };
+  const isUrl = value && value.startsWith("http");
+  return (
+    <div>
+      <div className="img-slot" style={{ aspectRatio: ratio || "4 / 3" }}>
+        {value ? <img src={value} alt="" /> : <div className="img-empty"><ImagePlus size={22} /><span>No image yet</span></div>}
+      </div>
+      <div className="img-actions">
+        <label className="mini">{busy ? "Uploading…" : <><ImagePlus size={13} /> Upload</>}<input type="file" accept="image/*" style={{ display: "none" }} disabled={busy} onChange={pick} /></label>
+        {value && <button className="mini" onClick={() => onChange("")}><Trash2 size={12} /> Remove</button>}
+      </div>
+      {upErr && <div style={{ color: "#e8917e", fontSize: 12, marginBottom: 8 }}>{upErr}</div>}
+      <input className="input" placeholder="…or paste a hosted image URL" value={isUrl ? value : ""} onChange={(e) => onChange(e.target.value)} />
+    </div>
+  );
+}
+
+/* =============================== ADMIN =============================== */
+function Login({ exit }) {
+  const [email, setEmail] = useState("");
+  const [pw, setPw] = useState("");
+  const [show, setShow] = useState(false);
+  const [err, setErr] = useState("");
+  const [busy, setBusy] = useState(false);
+  const submit = async () => {
+    setBusy(true); setErr("");
+    const { error } = await db.auth.signInWithPassword({ email: email.trim(), password: pw });
+    setBusy(false);
+    if (error) setErr("Wrong email or password.");
+  };
+  return (
+    <div className="login">
+      <div className="box">
+        <div style={{ width: 56, height: 56, borderRadius: "50%", margin: "0 auto 18px", display: "grid", placeItems: "center", background: "linear-gradient(135deg,var(--gold),var(--gold2))", color: "var(--ink)" }}><Lock size={24} /></div>
+        <h2>Owner Login</h2>
+        <p className="muted" style={{ fontSize: 13, marginBottom: 22 }}>Sign in to manage the studio.</p>
+        <div className="field" style={{ marginBottom: 12 }}><input className="input" type="email" placeholder="Email" value={email} onChange={(e) => { setEmail(e.target.value); setErr(""); }} /></div>
+        <div style={{ position: "relative" }}>
+          <input className="input" type={show ? "text" : "password"} placeholder="Password" value={pw}
+            onChange={(e) => { setPw(e.target.value); setErr(""); }} onKeyDown={(e) => e.key === "Enter" && submit()} />
+          <button onClick={() => setShow(!show)} style={{ position: "absolute", right: 12, top: 13, background: "none", border: "none", color: "var(--soft)", cursor: "pointer" }}>{show ? <EyeOff size={17} /> : <Eye size={17} />}</button>
+        </div>
+        {err && <div style={{ color: "#e8917e", fontSize: 13, marginTop: 10 }}>{err}</div>}
+        <button className="btn btn-gold" style={{ width: "100%", justifyContent: "center", marginTop: 18, opacity: busy ? .6 : 1 }} onClick={submit}>{busy ? "Signing in…" : "Enter Dashboard"}</button>
+        <button className="adminlink" style={{ marginTop: 16 }} onClick={exit}>← Back to website</button>
+      </div>
+    </div>
+  );
+}
+
+function Admin({ data, update, refreshAppts, viewSite, logout }) {
+  const [tab, setTab] = useState("dash");
+  const tabs = [
+    ["dash", "Dashboard", LayoutDashboard],
+    ["appts", "Appointments", CalendarCheck],
+    ["trans", "Transformation Gallery", Wand2],
+    ["content", "Images & Content", Images],
+    ["svc", "Services & Prices", Tag],
+    ["logs", "Daily Logs", NotebookPen],
+    ["clients", "Clients", Users],
+    ["set", "Settings", Cog],
+  ];
+  return (
+    <div className="admin">
+      <aside className="aside">
+        <div className="brand">Bansal's <b style={{ color: "var(--gold)" }}>Makeover</b></div>
+        {tabs.map(([id, l, Ic]) => (
+          <div key={id} className={`aitem ${tab === id ? "on" : ""}`} onClick={() => setTab(id)}><Ic size={17} /> {l}</div>
+        ))}
+        <div style={{ marginTop: "auto", paddingTop: 18, borderTop: "1px solid var(--line)" }}>
+          <div className="aitem" onClick={viewSite}><ExternalLink size={17} /> View Site</div>
+          <div className="aitem" onClick={logout}><LogOut size={17} /> Log Out</div>
+        </div>
+      </aside>
+      <main className="amain">
+        <div className="atabs">
+          {tabs.map(([id, l, Ic]) => (
+            <button key={id} className={`atab ${tab === id ? "on" : ""}`} onClick={() => setTab(id)}><Ic size={14} /> {l}</button>
+          ))}
+          <button className="atab exit" onClick={viewSite}><ExternalLink size={14} /> View Site</button>
+          <button className="atab exit" onClick={logout}><LogOut size={14} /> Log Out</button>
+        </div>
+        {tab === "dash" && <Dash data={data} />}
+        {tab === "appts" && <Appts data={data} refreshAppts={refreshAppts} />}
+        {tab === "trans" && <Transformations data={data} update={update} />}
+        {tab === "content" && <Content data={data} update={update} />}
+        {tab === "svc" && <Svc data={data} update={update} />}
+        {tab === "logs" && <Logs data={data} update={update} />}
+        {tab === "clients" && <Clients data={data} />}
+        {tab === "set" && <SettingsTab data={data} update={update} />}
+      </main>
+    </div>
+  );
+}
+
+function Dash({ data }) {
+  const a = data.appointments;
+  const revenue = a.filter((x) => x.status === "Completed").reduce((s, x) => s + (x.price || 0), 0);
+  const todayCount = a.filter((x) => x.date === today(0)).length;
+  const clients = new Set(a.map((x) => x.phone)).size;
+  const popular = Object.entries(a.reduce((m, x) => { m[x.service] = (m[x.service] || 0) + 1; return m; }, {})).sort((p, q) => q[1] - p[1])[0];
+  const chart = [...Array(7)].map((_, i) => { const d = today(i - 6); return { day: d.slice(5), count: a.filter((x) => x.date === d).length }; });
+  return (
+    <>
+      <div className="atop"><h2>Dashboard</h2><div className="muted" style={{ fontSize: 13 }}>{new Date().toDateString()}</div></div>
+      <div className="kpis">
+        <div className="kpi"><div className="l">Total Appointments</div><div className="n">{a.length}</div><div className="d">{todayCount} today</div></div>
+        <div className="kpi"><div className="l">Revenue (completed)</div><div className="n" style={{ fontSize: 32 }}>{inr(revenue)}</div><div className="d">across all time</div></div>
+        <div className="kpi"><div className="l">Unique Clients</div><div className="n">{clients}</div><div className="d">in records</div></div>
+        <div className="kpi"><div className="l">Most Booked</div><div className="n" style={{ fontSize: 22, fontFamily: "Jost", fontWeight: 500 }}>{popular ? popular[0] : "—"}</div><div className="d">{popular ? popular[1] + " bookings" : ""}</div></div>
+      </div>
+      <div className="card">
+        <h3>Appointments — last 7 days</h3>
+        <div style={{ height: 220 }}>
+          <MiniChart data={chart} />
+        </div>
+      </div>
+    </>
+  );
+}
+
+function Appts({ data, refreshAppts }) {
+  const set = async (id, status) => { await db.from("appointments").update({ status }).eq("id", id); refreshAppts(); };
+  const del = async (id) => { await db.from("appointments").delete().eq("id", id); refreshAppts(); };
+  const sorted = [...data.appointments].sort((p, q) => q.createdAt - p.createdAt);
+  return (
+    <>
+      <div className="atop"><h2>Appointments</h2><div className="muted" style={{ fontSize: 13 }}>{sorted.length} total</div></div>
+      <div className="card">
+        <table className="tbl">
+          <thead><tr><th>Client</th><th>Service</th><th>Date / Time</th><th>Value</th><th>Status</th><th></th></tr></thead>
+          <tbody>
+            {sorted.map((a) => (
+              <tr key={a.id}>
+                <td><div style={{ color: "var(--ivory)" }}>{a.name}</div><div className="muted" style={{ fontSize: 12 }}>{a.phone}</div></td>
+                <td>{a.service}</td>
+                <td>{a.date}<div className="muted" style={{ fontSize: 12 }}>{a.time}</div></td>
+                <td>{inr(a.price)}</td>
+                <td><select className="select" style={{ padding: "7px 10px", fontSize: 12, width: "auto" }} value={a.status} onChange={(e) => set(a.id, e.target.value)}>{STATUSES.map((s) => <option key={s}>{s}</option>)}</select></td>
+                <td><button className="mini icon" onClick={() => del(a.id)}><Trash2 size={13} /></button></td>
+              </tr>
+            ))}
+            {sorted.length === 0 && <tr><td colSpan="6" className="muted">No appointments yet. Bookings from the site appear here instantly.</td></tr>}
+          </tbody>
+        </table>
+      </div>
+    </>
+  );
+}
+
+function Transformations({ data, update }) {
+  const m = data.media;
+  const list = m.transformations;
+  const setT = (id, k, v) => update({ ...data, media: { ...m, transformations: list.map((x) => x.id === id ? { ...x, [k]: v } : x) } });
+  const add = () => update({ ...data, media: { ...m, transformations: [...list, { id: Date.now(), client: "", service: "New Transformation", date: today(0), desc: "", featured: false, before: "", after: "" }] } });
+  const del = (id) => update({ ...data, media: { ...m, transformations: list.filter((x) => x.id !== id) } });
+  const reorder = (i, dir) => update({ ...data, media: { ...m, transformations: move(list, i, dir) } });
+  return (
+    <>
+      <div className="atop"><h2>Transformation Gallery</h2><button className="btn btn-gold" style={{ padding: "11px 18px" }} onClick={add}><Plus size={15} /> Add Transformation</button></div>
+      {list.length === 0 && <div className="card muted">No transformations yet. Add your first before/after above.</div>}
+      {list.map((item, i) => (
+        <div className="card" key={item.id}>
+          <div className="eh">
+            <h3 style={{ margin: 0 }}>{item.service || "Untitled"} {item.featured && <Star size={15} fill="var(--gold)" color="var(--gold)" style={{ verticalAlign: "middle" }} />}</h3>
+            <div className="ord">
+              <button className="mini icon" disabled={i === 0} onClick={() => reorder(i, -1)}><ChevronUp size={14} /></button>
+              <button className="mini icon" disabled={i === list.length - 1} onClick={() => reorder(i, 1)}><ChevronDown size={14} /></button>
+              <button className="mini icon" onClick={() => del(item.id)}><Trash2 size={13} /></button>
+            </div>
+          </div>
+          <div className="row3">
+            <div className="field"><label>Client name</label><input className="input" value={item.client} onChange={(e) => setT(item.id, "client", e.target.value)} /></div>
+            <div className="field"><label>Service performed</label><input className="input" value={item.service} onChange={(e) => setT(item.id, "service", e.target.value)} /></div>
+            <div className="field"><label>Date</label><input className="input" type="date" value={item.date} onChange={(e) => setT(item.id, "date", e.target.value)} /></div>
+          </div>
+          <div className="field"><label>Description</label><textarea className="ta" value={item.desc} onChange={(e) => setT(item.id, "desc", e.target.value)} /></div>
+          <div className="ba-edit">
+            <div><label className="field" style={{ display: "block", marginBottom: 6 }}>Before image</label><ImageInput ratio="3 / 4" value={item.before} onChange={(v) => setT(item.id, "before", v)} /></div>
+            <div><label className="field" style={{ display: "block", marginBottom: 6 }}>After image</label><ImageInput ratio="3 / 4" value={item.after} onChange={(v) => setT(item.id, "after", v)} /></div>
+          </div>
+          <label className="toggle" style={{ marginTop: 14 }} onClick={() => setT(item.id, "featured", !item.featured)}>
+            <span className={`toggle ${item.featured ? "on" : ""}`}><span className="tg" /></span>
+            <span style={{ fontSize: 13, color: "var(--soft)" }}>Featured transformation</span>
+          </label>
+        </div>
+      ))}
+    </>
+  );
+}
+
+function Content({ data, update }) {
+  const c = data.content, m = data.media;
+  const setC = (k, v) => update({ ...data, content: { ...c, [k]: v } });
+  const setM = (k, v) => update({ ...data, media: { ...m, [k]: v } });
+  const setSvcImg = (id, v) => update({ ...data, services: data.services.map((s) => s.id === id ? { ...s, img: v } : s) });
+  const setRevImg = (id, v) => update({ ...data, reviews: data.reviews.map((r) => r.id === id ? { ...r, img: v } : r) });
+  // gallery
+  const addGal = async (e) => { const f = e.target.files[0]; if (!f) return; try { const url = await uploadImage(f); update({ ...data, media: { ...m, gallery: [...m.gallery, url] } }); } catch { alert("Upload failed — paste an image URL instead, or finish storage setup."); } };
+  const addGalUrl = (url) => { if (url) update({ ...data, media: { ...m, gallery: [...m.gallery, url] } }); };
+  const delGal = (i) => update({ ...data, media: { ...m, gallery: m.gallery.filter((_, idx) => idx !== i) } });
+  const moveGal = (i, dir) => update({ ...data, media: { ...m, gallery: move(m.gallery, i, dir) } });
+  // team
+  const addTeam = () => update({ ...data, media: { ...m, team: [...m.team, { id: Date.now(), name: "New Member", role: "Stylist", img: "" }] } });
+  const setTeam = (id, k, v) => update({ ...data, media: { ...m, team: m.team.map((t) => t.id === id ? { ...t, [k]: v } : t) } });
+  const delTeam = (id) => update({ ...data, media: { ...m, team: m.team.filter((t) => t.id !== id) } });
+  const moveTeam = (i, dir) => update({ ...data, media: { ...m, team: move(m.team, i, dir) } });
+  // products
+  const addProd = () => update({ ...data, media: { ...m, products: [...m.products, { id: Date.now(), name: "New Product", price: "", img: "" }] } });
+  const setProd = (id, k, v) => update({ ...data, media: { ...m, products: m.products.map((p) => p.id === id ? { ...p, [k]: v } : p) } });
+  const delProd = (id) => update({ ...data, media: { ...m, products: m.products.filter((p) => p.id !== id) } });
+  const moveProd = (i, dir) => update({ ...data, media: { ...m, products: move(m.products, i, dir) } });
+
+  return (
+    <>
+      <div className="atop"><h2>Images &amp; Content</h2><div className="muted" style={{ fontSize: 13 }}>Manage every section of the public site</div></div>
+
+      <div className="card">
+        <h3>Hero Section</h3>
+        <div className="row2">
+          <div className="field"><label>Headline</label><input className="input" value={c.heroLine1} onChange={(e) => setC("heroLine1", e.target.value)} /></div>
+          <div className="field"><label>Accent line (gold italic)</label><input className="input" value={c.heroLine2} onChange={(e) => setC("heroLine2", e.target.value)} /></div>
+        </div>
+        <div className="field"><label>Intro paragraph</label><textarea className="ta" value={c.heroLead} onChange={(e) => setC("heroLead", e.target.value)} /></div>
+        <div className="field"><label>Hero image (sits behind the floating cards)</label><ImageInput ratio="4 / 5" value={m.hero} onChange={(v) => setM("hero", v)} /></div>
+      </div>
+
+      <div className="card">
+        <h3>Experience / About Section</h3>
+        <div className="row2">
+          <div className="field"><label>Heading</label><input className="input" value={c.aboutHead} onChange={(e) => setC("aboutHead", e.target.value)} /></div>
+          <div className="field"><label>Accent (gold italic)</label><input className="input" value={c.aboutAccent} onChange={(e) => setC("aboutAccent", e.target.value)} /></div>
+        </div>
+        <div className="field"><label>Body text</label><textarea className="ta" value={c.aboutBody} onChange={(e) => setC("aboutBody", e.target.value)} /></div>
+        <div className="field"><label>About image</label><ImageInput ratio="4 / 5" value={m.about} onChange={(v) => setM("about", v)} /></div>
+      </div>
+
+      <div className="card">
+        <h3>Service Images</h3>
+        <p className="muted" style={{ fontSize: 13, marginBottom: 16 }}>Optional. A service card only shows an image once you add one — otherwise it stays text-only.</p>
+        <div className="row2">
+          {data.services.map((s) => (
+            <div key={s.id} className="field"><label>{s.name}</label><ImageInput ratio="16 / 10" value={s.img} onChange={(v) => setSvcImg(s.id, v)} /></div>
+          ))}
+        </div>
+      </div>
+
+      <div className="card">
+        <div className="eh"><h3 style={{ margin: 0 }}>Team</h3><button className="mini" onClick={addTeam}><Plus size={13} /> Add member</button></div>
+        <p className="muted" style={{ fontSize: 13, marginBottom: 6 }}>The Team section appears on the site only when at least one member is added.</p>
+        {m.team.map((t, i) => (
+          <div className="editrow" key={t.id}>
+            <div className="eh">
+              <div style={{ fontFamily: "Cormorant Garamond", fontSize: 20 }}>{t.name || "Member"}</div>
+              <div className="ord">
+                <button className="mini icon" disabled={i === 0} onClick={() => moveTeam(i, -1)}><ChevronUp size={14} /></button>
+                <button className="mini icon" disabled={i === m.team.length - 1} onClick={() => moveTeam(i, 1)}><ChevronDown size={14} /></button>
+                <button className="mini icon" onClick={() => delTeam(t.id)}><Trash2 size={13} /></button>
+              </div>
+            </div>
+            <div className="row2">
+              <div className="field"><label>Name</label><input className="input" value={t.name} onChange={(e) => setTeam(t.id, "name", e.target.value)} /></div>
+              <div className="field"><label>Role</label><input className="input" value={t.role} onChange={(e) => setTeam(t.id, "role", e.target.value)} /></div>
+            </div>
+            <div className="field"><label>Photo</label><ImageInput ratio="1 / 1" value={t.img} onChange={(v) => setTeam(t.id, "img", v)} /></div>
+          </div>
+        ))}
+      </div>
+
+      <div className="card">
+        <div className="eh"><h3 style={{ margin: 0 }}>Product Showcase</h3><button className="mini" onClick={addProd}><Plus size={13} /> Add product</button></div>
+        <p className="muted" style={{ fontSize: 13, marginBottom: 6 }}>The Products section appears on the site only when at least one product is added.</p>
+        {m.products.map((p, i) => (
+          <div className="editrow" key={p.id}>
+            <div className="eh">
+              <div style={{ fontFamily: "Cormorant Garamond", fontSize: 20 }}>{p.name || "Product"}</div>
+              <div className="ord">
+                <button className="mini icon" disabled={i === 0} onClick={() => moveProd(i, -1)}><ChevronUp size={14} /></button>
+                <button className="mini icon" disabled={i === m.products.length - 1} onClick={() => moveProd(i, 1)}><ChevronDown size={14} /></button>
+                <button className="mini icon" onClick={() => delProd(p.id)}><Trash2 size={13} /></button>
+              </div>
+            </div>
+            <div className="row2">
+              <div className="field"><label>Name</label><input className="input" value={p.name} onChange={(e) => setProd(p.id, "name", e.target.value)} /></div>
+              <div className="field"><label>Price (optional, e.g. ₹1,200)</label><input className="input" value={p.price} onChange={(e) => setProd(p.id, "price", e.target.value)} /></div>
+            </div>
+            <div className="field"><label>Image</label><ImageInput ratio="1 / 1" value={p.img} onChange={(v) => setProd(p.id, "img", v)} /></div>
+          </div>
+        ))}
+      </div>
+
+      <div className="card">
+        <h3>Testimonial Photos</h3>
+        <p className="muted" style={{ fontSize: 13, marginBottom: 16 }}>Optional client photo shown next to each review.</p>
+        <div className="row2">
+          {data.reviews.map((r) => (
+            <div key={r.id} className="field"><label>{r.name} · {r.service}</label><ImageInput ratio="1 / 1" value={r.img} onChange={(v) => setRevImg(r.id, v)} /></div>
+          ))}
+        </div>
+      </div>
+
+      <div className="card">
+        <h3>Gallery / Studio Images</h3>
+        <div className="gal-manage">
+          {m.gallery.map((src, i) => (
+            <div className="gal-tile" key={i}>
+              <img src={src} alt="" />
+              <div className="ctrls">
+                <div style={{ display: "flex", gap: 4 }}>
+                  <div className="gb" onClick={() => moveGal(i, -1)}><ChevronUp size={14} /></div>
+                  <div className="gb" onClick={() => moveGal(i, 1)}><ChevronDown size={14} /></div>
+                </div>
+                <div className="gb" onClick={() => delGal(i)}><X size={14} /></div>
+              </div>
+            </div>
+          ))}
+          <label className="gal-add"><ImagePlus size={22} /><span style={{ fontSize: 12 }}>Add image</span><input type="file" accept="image/*" style={{ display: "none" }} onChange={addGal} /></label>
+        </div>
+        <div className="field" style={{ marginTop: 14 }}>
+          <label>Or add by URL</label>
+          <UrlAdder onAdd={addGalUrl} />
+        </div>
+      </div>
+    </>
+  );
+}
+
+function UrlAdder({ onAdd }) {
+  const [u, setU] = useState("");
+  return (
+    <div className="track-row">
+      <input className="input" placeholder="https://image-url.jpg" value={u} onChange={(e) => setU(e.target.value)} />
+      <button className="btn btn-gold" onClick={() => { onAdd(u.trim()); setU(""); }}>Add</button>
+    </div>
+  );
+}
+
+function Svc({ data, update }) {
+  const edit = (id, field, val) => update({ ...data, services: data.services.map((s) => s.id === id ? { ...s, [field]: field === "price" ? +val || 0 : val } : s) });
+  const del = (id) => update({ ...data, services: data.services.filter((s) => s.id !== id) });
+  const add = () => update({ ...data, services: [...data.services, { id: Date.now(), name: "New Service", cat: "Hair", price: 1000, desc: "Describe this service.", img: "" }] });
+  return (
+    <>
+      <div className="atop"><h2>Services &amp; Prices</h2><button className="btn btn-gold" style={{ padding: "11px 18px" }} onClick={add}><Plus size={15} /> Add Service</button></div>
+      <div className="card">
+        <table className="tbl">
+          <thead><tr><th>Service</th><th>Category</th><th>Price (₹)</th><th></th></tr></thead>
+          <tbody>
+            {data.services.map((s) => (
+              <tr key={s.id}>
+                <td style={{ width: "50%" }}><input className="input" value={s.name} onChange={(e) => edit(s.id, "name", e.target.value)} /></td>
+                <td><input className="input" value={s.cat} onChange={(e) => edit(s.id, "cat", e.target.value)} /></td>
+                <td style={{ width: 130 }}><input className="input" type="number" value={s.price} onChange={(e) => edit(s.id, "price", e.target.value)} /></td>
+                <td><button className="mini icon" onClick={() => del(s.id)}><Trash2 size={13} /></button></td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+        <p className="muted" style={{ fontSize: 12.5, marginTop: 14 }}>Tip: add a photo to any service under <b style={{ color: "var(--soft)" }}>Images &amp; Content → Service Images</b>.</p>
+      </div>
+    </>
+  );
+}
+
+function Logs({ data, update }) {
+  const [date, setDate] = useState(today(0));
+  const [note, setNote] = useState("");
+  const addNote = () => { if (!note.trim()) return; update({ ...data, logs: [{ id: Date.now(), date, note: note.trim() }, ...data.logs] }); setNote(""); };
+  const delNote = (id) => update({ ...data, logs: data.logs.filter((l) => l.id !== id) });
+  const dates = Array.from(new Set([...data.appointments.map((a) => a.date), ...data.logs.map((l) => l.date)])).sort((a, b) => b.localeCompare(a));
+  return (
+    <>
+      <div className="atop"><h2>Daily Logs</h2><div className="muted" style={{ fontSize: 13 }}>Date-wise activity &amp; notes</div></div>
+      <div className="card">
+        <h3>Add a note</h3>
+        <div className="row2">
+          <div className="field"><label>Date</label><input className="input" type="date" value={date} onChange={(e) => setDate(e.target.value)} /></div>
+          <div className="field"><label>Note</label><input className="input" placeholder="e.g. 2 walk-ins, restocked colour" value={note} onChange={(e) => setNote(e.target.value)} onKeyDown={(e) => e.key === "Enter" && addNote()} /></div>
+        </div>
+        <button className="btn btn-gold" style={{ padding: "11px 20px" }} onClick={addNote}><Plus size={15} /> Add Note</button>
+      </div>
+      {dates.length === 0 && <div className="card muted">No activity logged yet.</div>}
+      {dates.map((d) => {
+        const appts = data.appointments.filter((a) => a.date === d);
+        const rev = appts.reduce((s, a) => s + (a.price || 0), 0);
+        const notes = data.logs.filter((l) => l.date === d);
+        return (
+          <div className="card" key={d}>
+            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "baseline", marginBottom: 12 }}>
+              <h3 style={{ margin: 0 }}>{new Date(d).toDateString()}</h3>
+              <div className="muted" style={{ fontSize: 13 }}>{appts.length} appts · {inr(rev)} booked</div>
+            </div>
+            {appts.length > 0 && (
+              <table className="tbl"><tbody>
+                {appts.map((a) => <tr key={a.id}><td>{a.time}</td><td>{a.name}</td><td>{a.service}</td><td><span className={`pill ${a.status.replace(/\s/g, "")}`}>{a.status}</span></td><td style={{ textAlign: "right" }}>{inr(a.price)}</td></tr>)}
+              </tbody></table>
+            )}
+            {notes.map((n) => (
+              <div key={n.id} style={{ display: "flex", justifyContent: "space-between", alignItems: "center", padding: "10px 0", borderTop: "1px solid rgba(224,193,136,.08)" }}>
+                <div style={{ fontSize: 14 }}><NotebookPen size={13} style={{ color: "var(--gold)", marginRight: 8, verticalAlign: "middle" }} />{n.note}</div>
+                <button className="mini icon" onClick={() => delNote(n.id)}><Trash2 size={12} /></button>
+              </div>
+            ))}
+          </div>
+        );
+      })}
+    </>
+  );
+}
+
+function Clients({ data }) {
+  const [q, setQ] = useState("");
+  const map = {};
+  data.appointments.forEach((a) => {
+    if (!map[a.phone]) map[a.phone] = { name: a.name, phone: a.phone, visits: 0, spend: 0, last: a.date };
+    map[a.phone].visits++; map[a.phone].spend += a.price || 0;
+    if (a.date > map[a.phone].last) map[a.phone].last = a.date;
+  });
+  const list = Object.values(map).filter((cl) => (cl.name + cl.phone).toLowerCase().includes(q.toLowerCase())).sort((p, r) => r.spend - p.spend);
+  return (
+    <>
+      <div className="atop"><h2>Clients</h2><input className="input" style={{ width: 240 }} placeholder="Search name or number" value={q} onChange={(e) => setQ(e.target.value)} /></div>
+      <div className="card">
+        <table className="tbl">
+          <thead><tr><th>Name</th><th>Mobile</th><th>Visits</th><th>Total Spend</th><th>Last Visit</th></tr></thead>
+          <tbody>
+            {list.map((cl) => <tr key={cl.phone}><td>{cl.name}</td><td>{cl.phone}</td><td>{cl.visits}</td><td>{inr(cl.spend)}</td><td>{cl.last}</td></tr>)}
+            {list.length === 0 && <tr><td colSpan="5" className="muted">No clients match.</td></tr>}
+          </tbody>
+        </table>
+      </div>
+    </>
+  );
+}
+
+function SettingsTab({ data, update }) {
+  const [s, setS] = useState(data.settings);
+  const [np, setNp] = useState("");
+  const [pwMsg, setPwMsg] = useState("");
+  const [saved, setSaved] = useState(false);
+  const save = () => { update({ ...data, settings: s }); setSaved(true); setTimeout(() => setSaved(false), 1800); };
+  const toggleCredits = () => { const next = { ...s, creditsEnabled: !s.creditsEnabled }; setS(next); update({ ...data, settings: { ...data.settings, creditsEnabled: next.creditsEnabled } }); };
+  const F = (label, key) => (<div className="field"><label>{label}</label><input className="input" value={s[key]} onChange={(e) => setS({ ...s, [key]: e.target.value })} /></div>);
+  return (
+    <>
+      <div className="atop"><h2>Business Settings</h2>{saved && <div style={{ color: "var(--gold)", fontSize: 13 }}><Check size={14} style={{ verticalAlign: "middle" }} /> Saved</div>}</div>
+      <div className="card">
+        <h3>Business Information</h3>
+        <div className="row2">{F("Business Name", "businessName")}{F("Tagline", "tagline")}</div>
+        <div className="row2">{F("Phone", "phone")}{F("WhatsApp", "whatsapp")}</div>
+        {F("Address", "address")}
+        <div className="row2">{F("Hours (open)", "hoursWeek")}{F("Hours (closed)", "hoursOff")}</div>
+        {F("Google Maps Link", "mapsLink")}
+      </div>
+      <div className="card">
+        <h3>Website Credits</h3>
+        <p className="muted" style={{ fontSize: 13, marginBottom: 14 }}>Show the "Made by GlowFrame" badge in the bottom-right corner of the website.</p>
+        <label className="toggle" onClick={toggleCredits}>
+          <span className={`toggle ${s.creditsEnabled ? "on" : ""}`}><span className="tg" /></span>
+          <span style={{ fontSize: 14, color: "var(--ivory)" }}>{s.creditsEnabled ? "Badge is visible" : "Badge is hidden"}</span>
+        </label>
+      </div>
+      <div className="card">
+        <h3>Owner Password</h3>
+        <p className="muted" style={{ fontSize: 13, marginBottom: 14 }}>Change the password for the owner login.</p>
+        <div className="field" style={{ maxWidth: 320 }}><label>New Password</label><input className="input" type="password" placeholder="At least 6 characters" value={np} onChange={(e) => setNp(e.target.value)} /></div>
+        <button className="mini" onClick={async () => { if (np.trim().length < 6) { setPwMsg("Use at least 6 characters."); return; } const { error } = await db.auth.updateUser({ password: np.trim() }); setPwMsg(error ? "Couldn't update password." : "Password updated."); setNp(""); }}>Update password</button>
+        {pwMsg && <div style={{ color: "var(--gold)", fontSize: 13, marginTop: 10 }}>{pwMsg}</div>}
+      </div>
+      <button className="btn btn-gold" onClick={save}>Save Changes</button>
+    </>
+  );
+}
+
+
+const root = ReactDOM.createRoot(document.getElementById("root"));
+root.render(<App />);
+
+</script>
+</body>
+</html>
